@@ -21,7 +21,7 @@ MonoBehaviour:
     y: 0
   bar:
     pivotIndex: 2
-    rotation: 0
+    rotation: 360
   targetBar:
     pivotIndex: 1
-    rotation: -180
+    rotation: 135

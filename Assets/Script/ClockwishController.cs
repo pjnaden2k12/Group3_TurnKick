@@ -1,8 +1,14 @@
 using UnityEngine;
 using System;
+using DG.Tweening;
 
 public class ClockwishController : MonoBehaviour
 {
+    public GameObject afterimagePrefab; // Prefab làm tàn ảnh
+    public float afterimageInterval = 0.05f;
+    public float afterimageLifetime = 0.3f;
+    private float afterimageTimer = 0f;
+
     public RectTransform barRect;   // Thanh
     public RectTransform dotA;
     public RectTransform dotB;
@@ -28,8 +34,30 @@ public class ClockwishController : MonoBehaviour
         {
             RotateBar();
             CheckCollision();
+
+            afterimageTimer += Time.deltaTime;
+            if (afterimageTimer >= afterimageInterval)
+            {
+                CreateAfterimage();
+                afterimageTimer = 0f;
+            }
         }
     }
+    void CreateAfterimage()
+    {
+        GameObject ghost = Instantiate(afterimagePrefab, barRect.position, barRect.rotation, barRect.parent);
+        ghost.transform.localScale = barRect.localScale;
+
+        // Làm mờ dần và tự hủy sau một thời gian
+        CanvasGroup cg = ghost.AddComponent<CanvasGroup>();
+        cg.alpha = 1f;
+
+        ghost.transform.SetAsFirstSibling(); // Cho nó nằm dưới thanh gốc
+
+        DG.Tweening.DOTween.To(() => cg.alpha, x => cg.alpha = x, 0f, afterimageLifetime)
+            .OnComplete(() => Destroy(ghost));
+    }
+
 
     public void StartRotate(RectTransform pivotDot)
     {

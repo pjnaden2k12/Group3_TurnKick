@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+using DG.Tweening;
 public class LevelManager : MonoBehaviour
 {
     public LevelData[] levels;             // Mảng các level (gán trong Inspector)
@@ -37,8 +37,15 @@ public class LevelManager : MonoBehaviour
         {
             RectTransform pivot = Instantiate(pivotPrefab, canvasTransform);
             pivot.anchoredPosition = new Vector2(p.x, p.y);
+            pivot.localScale = Vector3.zero; // Start nhỏ
+
             allPivots.Add(pivot);
+
+            // Pudding effect
+            float delay = 0.1f * allPivots.Count;
+            pivot.DOScale(Vector3.one, 0.4f).SetEase(Ease.OutBack).SetDelay(delay);
         }
+
         CreateBar(targetBarPrefab, level.targetBar);
         // Tạo bar xoay
         CreateBar(barPrefab, level.bar);
@@ -76,6 +83,9 @@ public class LevelManager : MonoBehaviour
         // Đặt thanh sao cho DotA nằm chính xác tại pivot
         bar.anchoredPosition = pivotPos + rotatedOffset;
         bar.localRotation = Quaternion.Euler(0, 0, data.rotation);
+        // Pudding effect
+        float delay = 0.15f * allBars.Count;
+        bar.DOScale(Vector3.one, 0.4f).SetEase(Ease.OutBack).SetDelay(delay);
 
         allBars.Add(bar);
     }
