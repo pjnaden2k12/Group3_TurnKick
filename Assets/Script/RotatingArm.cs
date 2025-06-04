@@ -60,7 +60,7 @@ public class ClockwishController : MonoBehaviour
                 if (!IsDotInPivot(dotB, dotBStartPivot))
                 {
                     dotBHasLeftStartPivot = true;
-                    Debug.Log("DotB đã rời pivot ban đầu!");
+                    
                 }
             }
 
@@ -86,7 +86,7 @@ public class ClockwishController : MonoBehaviour
                 if (!IsDotInPivot(dotA, dotAStartPivot))
                 {
                     dotAHasLeftStartPivot = true;
-                    Debug.Log("DotA đã rời pivot ban đầu!");
+                    
                 }
             }
 
@@ -109,7 +109,7 @@ public class ClockwishController : MonoBehaviour
     void StopRotation()
     {
         isRotating = false;
-        Debug.Log("Dot chạm pivot sau khi đã rời pivot ban đầu! Dừng xoay.");
+        
     }
 
     RectTransform GetPivotUnderDot(RectTransform dot)

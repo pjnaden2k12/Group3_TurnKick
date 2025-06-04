@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Pivot
   - Dot
+  - WinTarget
   layers:
   - Default
   - TransparentFX
