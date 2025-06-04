@@ -2,19 +2,21 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+[RequireComponent(typeof(RectTransform), typeof(Image))]
 public class Pivot : MonoBehaviour, IPointerClickHandler
 {
+    [Header("Sprite States")]
     public Sprite clearSprite;
     public Sprite noClearSprite;
     public Sprite normalSprite;
 
-    protected Image pivotImage;
-    protected RectTransform pivotRect;
-    protected ClockwishController controller;
+    private Image pivotImage;
+    private RectTransform pivotRect;
+    private ClockwishController controller;
 
     private const float detectionRadius = 160f;
 
-    protected virtual void Start()
+    void Start()
     {
         pivotImage = GetComponent<Image>();
         pivotRect = GetComponent<RectTransform>();
@@ -23,7 +25,7 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
         pivotImage.sprite = normalSprite;
     }
 
-    protected virtual void Update()
+    void Update()
     {
         Vector2 pivotScreenPos = RectTransformUtility.WorldToScreenPoint(null, pivotRect.position);
         GameObject[] dots = GameObject.FindGameObjectsWithTag("Dot");
@@ -48,6 +50,7 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
             }
         }
 
+        // Đổi sprite tương ứng
         if (isTouching)
         {
             pivotImage.sprite = clearSprite;
@@ -62,10 +65,11 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    public virtual void OnPointerClick(PointerEventData eventData)
+    public void OnPointerClick(PointerEventData eventData)
     {
         if (controller == null || controller.isRotating) return;
 
+        // Kiểm tra nếu dot đang nằm trong pivot thì thực hiện xoay
         if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotA.position))
         {
             controller.StartRotate(controller.dotA);

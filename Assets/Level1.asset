@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: Level1
   m_EditorClassIdentifier: 
   pivots:
-  - x: 113.14
-    y: 113.14
-  - x: 320
-    y: 320
   - x: 0
+    y: 0
+  - x: 160
+    y: 0
+  - x: -160
     y: 0
   bar:
     pivotIndex: 2
-    rotation: 35
+    rotation: 0
   targetBar:
-    pivotIndex: 0
+    pivotIndex: 1
     rotation: -180

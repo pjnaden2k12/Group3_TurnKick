@@ -3,14 +3,11 @@ using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
-    [Header("Level & Prefabs")]
-    public LevelData[] levels; // Tập hợp tất cả level (gán trong Inspector)
-    public RectTransform pivotPrefab;
-    public RectTransform pivotXPrefab; // ✅ Pivot đặc biệt
-    public RectTransform barPrefab;
+    public LevelData[] levels;             // Mảng các level (gán trong Inspector)
     public RectTransform targetBarPrefab;
-
-    [Header("UI")]
+    public RectTransform pivotPrefab;
+    public RectTransform barPrefab;
+    
     public Transform canvasTransform;
 
     private List<RectTransform> allPivots = new List<RectTransform>();
@@ -27,37 +24,29 @@ public class LevelManager : MonoBehaviour
     {
         if (levelIndex < 0 || levelIndex >= levels.Length)
         {
-            Debug.LogError("❌ Level index ngoài phạm vi!");
+            Debug.LogError("Level index ngoài phạm vi!");
             return;
         }
 
         ClearLevel();
-        LevelData level = levels[levelIndex];
 
-        // Tạo pivot thường
+        LevelData level = levels[levelIndex];
+        
+        // Tạo pivot
         foreach (var p in level.pivots)
         {
             RectTransform pivot = Instantiate(pivotPrefab, canvasTransform);
             pivot.anchoredPosition = new Vector2(p.x, p.y);
             allPivots.Add(pivot);
         }
-
-        // ✅ Tạo PivotX đặc biệt
-        if (level.pivotXs != null)
-        {
-            foreach (var p in level.pivotXs)
-            {
-                RectTransform pivotX = Instantiate(pivotXPrefab, canvasTransform);
-                pivotX.anchoredPosition = new Vector2(p.x, p.y);
-                allPivots.Add(pivotX); // Có thể dùng để gắn Bar nếu cần
-            }
-        }
-
-        // Tạo thanh mẫu & xoay
         CreateBar(targetBarPrefab, level.targetBar);
+        // Tạo bar xoay
         CreateBar(barPrefab, level.bar);
 
-        Debug.Log($"✅ Đã load Level {levelIndex + 1}");
+        // Tạo targetBar
+        
+
+        Debug.Log($"Đã load Level {levelIndex + 1}");
     }
 
     void ClearLevel()
@@ -73,29 +62,24 @@ public class LevelManager : MonoBehaviour
 
     void CreateBar(RectTransform barPrefab, BarData data)
     {
-        if (data.pivotIndex < 0 || data.pivotIndex >= allPivots.Count)
-        {
-            Debug.LogWarning("⚠️ pivotIndex không hợp lệ!");
-            return;
-        }
-
         RectTransform pivot = allPivots[data.pivotIndex];
         RectTransform bar = Instantiate(barPrefab, canvasTransform);
 
         Vector2 pivotPos = pivot.anchoredPosition;
 
-        // DotA được đặt tại (0, -80) trong local space của thanh
+        // Offset từ tâm thanh đến DotA (vì DotA đặt tại (0, -80) trong local space)
         Vector2 dotAOffset = new Vector2(0, -80f);
 
-        // Xoay offset theo góc thanh
+        // Xoay offset theo góc xoay của thanh
         Vector2 rotatedOffset = RotateOffset(dotAOffset, data.rotation);
 
-        // Đặt thanh sao cho DotA nằm chính xác trên pivot
+        // Đặt thanh sao cho DotA nằm chính xác tại pivot
         bar.anchoredPosition = pivotPos + rotatedOffset;
         bar.localRotation = Quaternion.Euler(0, 0, data.rotation);
 
         allBars.Add(bar);
     }
+
 
     Vector2 RotateOffset(Vector2 offset, float angleDegrees)
     {
@@ -108,6 +92,9 @@ public class LevelManager : MonoBehaviour
         );
     }
 
+
+
+    // Gọi hàm này để load level kế tiếp
     public void NextLevel()
     {
         currentLevelIndex++;
