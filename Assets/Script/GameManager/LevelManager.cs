@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+
 public class LevelManager : MonoBehaviour
 {
     public LevelData[] levels;             // Mảng các level (gán trong Inspector)
@@ -17,53 +18,63 @@ public class LevelManager : MonoBehaviour
 
     void Start()
     {
-        LoadLevel(currentLevelIndex);
+        
     }
 
     public void LoadLevel(int levelIndex)
     {
+        Debug.Log($"LoadLevel called with index: {levelIndex}");
+
         if (levelIndex < 0 || levelIndex >= levels.Length)
         {
             Debug.LogError("Level index ngoài phạm vi!");
             return;
         }
 
+        Debug.Log($"[LoadLevel] Bắt đầu load level {levelIndex + 1}");
+
         ClearLevel();
 
         LevelData level = levels[levelIndex];
-        
-        // Tạo pivot
+    
+        Debug.Log($"Level pivots count: {level.pivots.Length}");
+
         foreach (var p in level.pivots)
         {
+            Debug.Log($"Pivot pos: {p.x}, {p.y}");
             RectTransform pivot = Instantiate(pivotPrefab, canvasTransform);
             pivot.anchoredPosition = new Vector2(p.x, p.y);
             pivot.localScale = Vector3.zero; // Start nhỏ
 
             allPivots.Add(pivot);
 
-            // Pudding effect
-            float delay = 0.1f * allPivots.Count;
-            pivot.DOScale(Vector3.one, 0.4f).SetEase(Ease.OutBack).SetDelay(delay);
+            float delay = 0.3f * allPivots.Count;
+            pivot.DOScale(Vector3.one, 1.5f).SetEase(Ease.OutBack).SetDelay(delay).SetLink(pivot.gameObject);
         }
 
+        // Tạo targetBar
         CreateBar(targetBarPrefab, level.targetBar);
         // Tạo bar xoay
         CreateBar(barPrefab, level.bar);
 
-        // Tạo targetBar
-        
-
-        Debug.Log($"Đã load Level {levelIndex + 1}");
+        Debug.Log($"[LoadLevel] Đã load Level {levelIndex + 1}");
     }
+
 
     void ClearLevel()
     {
         foreach (var pivot in allPivots)
+        {
+            DOTween.Kill(pivot.gameObject);  // Kill tween trước khi destroy
             Destroy(pivot.gameObject);
+        }
         allPivots.Clear();
 
         foreach (var bar in allBars)
+        {
+            DOTween.Kill(bar.gameObject);    // Kill tween trước khi destroy
             Destroy(bar.gameObject);
+        }
         allBars.Clear();
     }
 
@@ -73,23 +84,28 @@ public class LevelManager : MonoBehaviour
         RectTransform bar = Instantiate(barPrefab, canvasTransform);
 
         Vector2 pivotPos = pivot.anchoredPosition;
-
-        // Offset từ tâm thanh đến DotA (vì DotA đặt tại (0, -80) trong local space)
         Vector2 dotAOffset = new Vector2(0, -80f);
-
-        // Xoay offset theo góc xoay của thanh
         Vector2 rotatedOffset = RotateOffset(dotAOffset, data.rotation);
-
-        // Đặt thanh sao cho DotA nằm chính xác tại pivot
-        bar.anchoredPosition = pivotPos + rotatedOffset;
+    
+        Vector2 startPos = pivotPos + rotatedOffset + new Vector2(0, -200);  // bắt đầu ngoài màn hình
+        bar.anchoredPosition = startPos;
         bar.localRotation = Quaternion.Euler(0, 0, data.rotation);
-        // Pudding effect
-        float delay = 0.15f * allBars.Count;
-        bar.DOScale(Vector3.one, 0.4f).SetEase(Ease.OutBack).SetDelay(delay);
+        bar.localScale = Vector3.one;
+
+        CanvasGroup cg = bar.gameObject.AddComponent<CanvasGroup>();
+        cg.alpha = 0;
+
+        float delay = 0.3f * allBars.Count;
+
+        Sequence seq = DOTween.Sequence();
+        seq.Append(bar.DOAnchorPos(pivotPos + rotatedOffset, 0.8f).SetEase(Ease.OutBack).SetDelay(delay));
+        seq.Join(cg.DOFade(1f, 0.8f).SetEase(Ease.Linear));
+
+        // Liên kết tween với bar để auto kill tween khi bar bị destroy
+        seq.SetLink(bar.gameObject);
 
         allBars.Add(bar);
     }
-
 
     Vector2 RotateOffset(Vector2 offset, float angleDegrees)
     {
@@ -101,8 +117,6 @@ public class LevelManager : MonoBehaviour
             offset.x * sin + offset.y * cos
         );
     }
-
-
 
     // Gọi hàm này để load level kế tiếp
     public void NextLevel()
