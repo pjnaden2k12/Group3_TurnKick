@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class ClockwishController : MonoBehaviour
 {
@@ -17,6 +18,9 @@ public class ClockwishController : MonoBehaviour
 
     private bool dotAHasLeftStartPivot = false;
     private bool dotBHasLeftStartPivot = false;
+
+    // Event phát khi bắt đầu xoay
+    public event Action OnRotationStarted;
 
     void Update()
     {
@@ -38,9 +42,11 @@ public class ClockwishController : MonoBehaviour
         dotAStartPivot = GetPivotUnderDot(dotA);
         dotBStartPivot = GetPivotUnderDot(dotB);
 
-        // Reset flags
         dotAHasLeftStartPivot = false;
         dotBHasLeftStartPivot = false;
+
+        // Phát sự kiện báo bắt đầu xoay
+        OnRotationStarted?.Invoke();
     }
 
     void RotateBar()
@@ -54,13 +60,11 @@ public class ClockwishController : MonoBehaviour
 
         if (currentPivot == dotA)
         {
-            // Kiểm tra nếu DotB đã rời pivot ban đầu
             if (!dotBHasLeftStartPivot)
             {
                 if (!IsDotInPivot(dotB, dotBStartPivot))
                 {
                     dotBHasLeftStartPivot = true;
-                    
                 }
             }
 
@@ -70,7 +74,6 @@ public class ClockwishController : MonoBehaviour
 
                 if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, dotB.position))
                 {
-                    // Nếu DotB đã rời pivot ban đầu ít nhất 1 lần thì coi như chạm pivot mới
                     if (dotBHasLeftStartPivot)
                     {
                         StopRotation();
@@ -86,7 +89,6 @@ public class ClockwishController : MonoBehaviour
                 if (!IsDotInPivot(dotA, dotAStartPivot))
                 {
                     dotAHasLeftStartPivot = true;
-                    
                 }
             }
 
@@ -109,7 +111,6 @@ public class ClockwishController : MonoBehaviour
     void StopRotation()
     {
         isRotating = false;
-        
     }
 
     RectTransform GetPivotUnderDot(RectTransform dot)

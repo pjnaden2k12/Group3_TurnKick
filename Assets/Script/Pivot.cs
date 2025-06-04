@@ -1,28 +1,31 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class PivotSpriteController : MonoBehaviour
+public class Pivot : MonoBehaviour, IPointerClickHandler
 {
     public Sprite clearSprite;
     public Sprite noClearSprite;
     public Sprite normalSprite;
 
-    private Image pivotImage;
-    private RectTransform pivotRectTransform;
+    protected Image pivotImage;
+    protected RectTransform pivotRect;
+    protected ClockwishController controller;
 
     private const float detectionRadius = 160f;
 
-    void Start()
+    protected virtual void Start()
     {
         pivotImage = GetComponent<Image>();
-        pivotRectTransform = GetComponent<RectTransform>();
+        pivotRect = GetComponent<RectTransform>();
+        controller = FindFirstObjectByType<ClockwishController>();
+
         pivotImage.sprite = normalSprite;
     }
 
-    void Update()
+    protected virtual void Update()
     {
-        Vector2 pivotScreenPos = RectTransformUtility.WorldToScreenPoint(null, pivotRectTransform.position);
-
+        Vector2 pivotScreenPos = RectTransformUtility.WorldToScreenPoint(null, pivotRect.position);
         GameObject[] dots = GameObject.FindGameObjectsWithTag("Dot");
 
         bool isTouching = false;
@@ -32,7 +35,6 @@ public class PivotSpriteController : MonoBehaviour
         {
             RectTransform dotRect = dot.GetComponent<RectTransform>();
             Vector2 dotScreenPos = RectTransformUtility.WorldToScreenPoint(null, dotRect.position);
-
             float distance = Vector2.Distance(pivotScreenPos, dotScreenPos);
 
             if (RectTransformUtility.RectangleContainsScreenPoint(dotRect, pivotScreenPos))
@@ -57,6 +59,20 @@ public class PivotSpriteController : MonoBehaviour
         else
         {
             pivotImage.sprite = normalSprite;
+        }
+    }
+
+    public virtual void OnPointerClick(PointerEventData eventData)
+    {
+        if (controller == null || controller.isRotating) return;
+
+        if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotA.position))
+        {
+            controller.StartRotate(controller.dotA);
+        }
+        else if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotB.position))
+        {
+            controller.StartRotate(controller.dotB);
         }
     }
 }
