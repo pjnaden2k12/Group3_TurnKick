@@ -26,14 +26,14 @@ RectTransform:
   m_GameObject: {fileID: 2115374361314717006}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.91545796, y: 0.91545796, z: 0.91545796}
+  m_LocalScale: {x: 1.8630387, y: 1.8630387, z: 1.8630387}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 442470797611243442}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000000014901161, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 2, y: 2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &5714207361130118763
@@ -260,8 +260,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.0172979, y: 0}
-  m_Radius: 7.008763
+  m_Offset: {x: 0.2681579, y: 0}
+  m_Radius: 34.605354
 --- !u!114 &7070380341062801743
 MonoBehaviour:
   m_ObjectHideFlags: 0

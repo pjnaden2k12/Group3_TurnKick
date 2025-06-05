@@ -12,7 +12,7 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
 
     private Image pivotImage;
     private RectTransform pivotRect;
-    private ClockwishController controller;
+    private ClockwiseController controller;
 
     private const float detectionRadius = 160f;
 
@@ -20,7 +20,7 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
     {
         pivotImage = GetComponent<Image>();
         pivotRect = GetComponent<RectTransform>();
-        controller = FindFirstObjectByType<ClockwishController>();
+        controller = FindFirstObjectByType<ClockwiseController>();
 
         pivotImage.sprite = normalSprite;
     }

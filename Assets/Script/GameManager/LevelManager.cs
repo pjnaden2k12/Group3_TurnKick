@@ -1,110 +1,134 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using TMPro;
 
 public class LevelManager : MonoBehaviour
 {
-    public LevelData[] levels;             // Mảng các level (gán trong Inspector)
-    public RectTransform targetBarPrefab;
+    [Header("Data & Prefabs")]
+    public LevelData[] levels;
+
     public RectTransform pivotPrefab;
-    public RectTransform barPrefab;
-    
+    public RectTransform clockwiseShortPrefab;
+    public RectTransform clockwiseLongPrefab;
+    public RectTransform winTargetShortPrefab;
+    public RectTransform winTargetLongPrefab;
+
     public Transform canvasTransform;
+    public TextMeshProUGUI levelText;
 
     private List<RectTransform> allPivots = new List<RectTransform>();
     private List<RectTransform> allBars = new List<RectTransform>();
 
     private int currentLevelIndex = 0;
 
-    void Start()
-    {
-        
-    }
-
     public void LoadLevel(int levelIndex)
     {
-        Debug.Log($"LoadLevel called with index: {levelIndex}");
-
         if (levelIndex < 0 || levelIndex >= levels.Length)
         {
-            Debug.LogError("Level index ngoài phạm vi!");
+            Debug.LogError("Level index out of range!");
             return;
         }
 
-        Debug.Log($"[LoadLevel] Bắt đầu load level {levelIndex + 1}");
-
+        currentLevelIndex = levelIndex;
         ClearLevel();
 
         LevelData level = levels[levelIndex];
-    
-        Debug.Log($"Level pivots count: {level.pivots.Length}");
+
+        if (levelText != null)
+            levelText.text = (levelIndex + 1).ToString();
 
         foreach (var p in level.pivots)
         {
-            Debug.Log($"Pivot pos: {p.x}, {p.y}");
-            RectTransform pivot = Instantiate(pivotPrefab, canvasTransform);
+            var pivot = Instantiate(pivotPrefab, canvasTransform);
             pivot.anchoredPosition = new Vector2(p.x, p.y);
-            pivot.localScale = Vector3.zero; // Start nhỏ
+            pivot.localScale = Vector3.zero;
 
             allPivots.Add(pivot);
 
             float delay = 0.3f * allPivots.Count;
-            pivot.DOScale(Vector3.one, 1.5f).SetEase(Ease.OutBack).SetDelay(delay).SetLink(pivot.gameObject);
+            pivot.DOScale(Vector3.one, 1.5f).SetEase(Ease.OutBack).SetDelay(delay);
         }
 
-        // Tạo targetBar
-        CreateBar(targetBarPrefab, level.targetBar);
-        // Tạo bar xoay
-        CreateBar(barPrefab, level.bar);
+        RectTransform clockwiseShortBar = CreateBar(clockwiseShortPrefab, level.clockwiseShort, true, 999);
+        CreateBar(winTargetShortPrefab, level.winTargetShort, true, 1);
 
-        Debug.Log($"[LoadLevel] Đã load Level {levelIndex + 1}");
+        if (currentLevelIndex >= 1)
+        {
+            RectTransform clockwiseLongBar = CreateBar(clockwiseLongPrefab, level.clockwiseLong, true, 5, clockwiseShortBar, keepWorldPosition: true);
+            CreateBar(winTargetLongPrefab, level.winTargetLong, true, 0);
+        }
     }
-
 
     void ClearLevel()
     {
-        foreach (var pivot in allPivots)
-        {
-            DOTween.Kill(pivot.gameObject);  // Kill tween trước khi destroy
-            Destroy(pivot.gameObject);
-        }
+        foreach (var p in allPivots)
+            Destroy(p.gameObject);
         allPivots.Clear();
 
-        foreach (var bar in allBars)
-        {
-            DOTween.Kill(bar.gameObject);    // Kill tween trước khi destroy
-            Destroy(bar.gameObject);
-        }
+        foreach (var b in allBars)
+            Destroy(b.gameObject);
         allBars.Clear();
     }
 
-    void CreateBar(RectTransform barPrefab, BarData data)
+    RectTransform CreateBar(RectTransform prefab, ClockwiseData data, bool isInteractive, int siblingIndex, RectTransform parent = null, bool keepWorldPosition = false)
     {
+        if (data == null || data.pivotIndex < 0 || data.pivotIndex >= allPivots.Count)
+            return null;
+
         RectTransform pivot = allPivots[data.pivotIndex];
-        RectTransform bar = Instantiate(barPrefab, canvasTransform);
 
         Vector2 pivotPos = pivot.anchoredPosition;
-        Vector2 dotAOffset = new Vector2(0, -80f);
-        Vector2 rotatedOffset = RotateOffset(dotAOffset, data.rotation);
-    
-        Vector2 startPos = pivotPos + rotatedOffset + new Vector2(0, -200);  // bắt đầu ngoài màn hình
-        bar.anchoredPosition = startPos;
-        bar.localRotation = Quaternion.Euler(0, 0, data.rotation);
+        Vector2 baseOffset = new Vector2(0, -80f);
+        Vector2 rotatedOffset = RotateOffset(baseOffset, data.rotation);
+        Vector2 finalPos = pivotPos + rotatedOffset;
+
+        RectTransform bar;
+
+        if (parent != null)
+        {
+            GameObject tempGO = new GameObject("Temp", typeof(RectTransform));
+            RectTransform temp = tempGO.GetComponent<RectTransform>();
+            temp.SetParent(canvasTransform);
+            temp.anchorMin = temp.anchorMax = temp.pivot = new Vector2(0.5f, 0.5f);
+            temp.sizeDelta = Vector2.zero;
+            temp.anchoredPosition = finalPos;
+            temp.localRotation = Quaternion.identity;
+
+            bar = Instantiate(prefab, temp);
+            bar.anchoredPosition = Vector2.zero;
+            bar.rotation = Quaternion.Euler(0, 0, data.rotation); // giữ đúng hướng gốc
+            bar.SetParent(parent, worldPositionStays: true);
+
+            Destroy(tempGO);
+        }
+        else
+        {
+            bar = Instantiate(prefab, canvasTransform);
+            bar.anchoredPosition = finalPos;
+            bar.localRotation = Quaternion.Euler(0, 0, data.rotation);
+        }
+
         bar.localScale = Vector3.one;
 
         CanvasGroup cg = bar.gameObject.AddComponent<CanvasGroup>();
-        cg.alpha = 0;
+        cg.alpha = 0f;
 
         float delay = 0.3f * allBars.Count;
-
         Sequence seq = DOTween.Sequence();
-        seq.Append(bar.DOAnchorPos(pivotPos + rotatedOffset, 0.8f).SetEase(Ease.OutBack).SetDelay(delay));
+        seq.Append(bar.DOAnchorPos(bar.anchoredPosition, 0.8f).SetEase(Ease.OutBack).SetDelay(delay));
         seq.Join(cg.DOFade(1f, 0.8f).SetEase(Ease.Linear));
 
-        // Liên kết tween với bar để auto kill tween khi bar bị destroy
-        seq.SetLink(bar.gameObject);
+        if (!isInteractive)
+        {
+            foreach (var script in bar.GetComponents<MonoBehaviour>())
+                script.enabled = false;
+        }
+
+        bar.SetSiblingIndex(siblingIndex);
 
         allBars.Add(bar);
+        return bar;
     }
 
     Vector2 RotateOffset(Vector2 offset, float angleDegrees)
@@ -118,7 +142,6 @@ public class LevelManager : MonoBehaviour
         );
     }
 
-    // Gọi hàm này để load level kế tiếp
     public void NextLevel()
     {
         currentLevelIndex++;

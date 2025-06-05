@@ -7,6 +7,8 @@ TagManager:
   - Pivot
   - Dot
   - WinTarget
+  - Minute
+  - CheckPoint
   layers:
   - Default
   - TransparentFX
@@ -43,6 +45,15 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Clockwise
+    uniqueID: 2881040791
+    locked: 0
+  - name: Pivot
+    uniqueID: 63122907
+    locked: 0
+  - name: Dot
+    uniqueID: 1787776463
     locked: 0
   m_RenderingLayers:
   - Default

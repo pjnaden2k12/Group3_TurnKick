@@ -13,15 +13,23 @@ MonoBehaviour:
   m_Name: Level2
   m_EditorClassIdentifier: 
   pivots:
+  - x: -160
+    y: 0
   - x: 0
     y: 0
   - x: 160
     y: 0
-  - x: -160
-    y: 0
-  bar:
+  - x: 96
+    y: 128
+  clockwiseShort:
+    pivotIndex: 0
+    rotation: 0
+  clockwiseLong:
+    pivotIndex: 0
+    rotation: 30
+  winTargetShort:
     pivotIndex: 2
-    rotation: 0
-  targetBar:
-    pivotIndex: 1
-    rotation: 0
+    rotation: 45
+  winTargetLong:
+    pivotIndex: 2
+    rotation: 80

@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using DG.Tweening;
 
-public class ClockwishController : MonoBehaviour
+public class ClockwiseController : MonoBehaviour
 {
     public GameObject afterimagePrefab; // Prefab làm tàn ảnh
     public float afterimageInterval = 0.05f;
@@ -50,7 +50,7 @@ public class ClockwishController : MonoBehaviour
 
         // Làm mờ dần và tự hủy sau một thời gian
         CanvasGroup cg = ghost.AddComponent<CanvasGroup>();
-        cg.alpha = 1f;
+        cg.alpha = 1.5f;
 
         ghost.transform.SetAsFirstSibling(); // Cho nó nằm dưới thanh gốc
 

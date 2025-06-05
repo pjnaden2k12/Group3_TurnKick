@@ -1,11 +1,15 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "LevelData", menuName = "Game/LevelData")]
 public class LevelData : ScriptableObject
 {
     public PivotData[] pivots;
-    public BarData bar;
-    public BarData targetBar;
+
+    public ClockwiseData clockwiseShort;
+    public ClockwiseData clockwiseLong;
+
+    public ClockwiseData winTargetShort;
+    public ClockwiseData winTargetLong;
 }
 
 [System.Serializable]
@@ -15,7 +19,7 @@ public class PivotData
 }
 
 [System.Serializable]
-public class BarData
+public class ClockwiseData
 {
     public int pivotIndex;
     public float rotation;
