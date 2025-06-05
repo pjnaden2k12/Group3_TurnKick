@@ -63,13 +63,21 @@ public class LevelManager : MonoBehaviour
     void ClearLevel()
     {
         foreach (var p in allPivots)
+        {
+            DOTween.Kill(p);       // Kill tween liên quan tới pivot
             Destroy(p.gameObject);
+        }
         allPivots.Clear();
 
         foreach (var b in allBars)
+        {
+            DOTween.Kill(b);       // Kill tween liên quan tới bar
             Destroy(b.gameObject);
+        }
         allBars.Clear();
     }
+
+
 
     RectTransform CreateBar(RectTransform prefab, ClockwiseData data, bool isInteractive, int siblingIndex, RectTransform parent = null, bool keepWorldPosition = false)
     {

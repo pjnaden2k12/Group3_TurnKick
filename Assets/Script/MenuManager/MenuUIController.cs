@@ -184,12 +184,15 @@ public class MenuUIController : MonoBehaviour
             return;
         }
 
+        currentLevelIndex = levelIndex; // ✅ Gán lại để chơi lại đúng level này
+
         gamePlayPanel.SetActive(true);
-        AnimateOpenGamePlayPanel(); 
+        AnimateOpenGamePlayPanel();
         levelPanel.SetActive(false);
         levelText.text = $"{levelIndex + 1}";
         levelManager.LoadLevel(levelIndex);
     }
+
     // Nút quay về level panel
     void OnBackToLevelsClicked()
     {
