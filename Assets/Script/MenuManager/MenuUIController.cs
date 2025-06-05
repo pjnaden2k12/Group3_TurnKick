@@ -156,7 +156,7 @@ public class MenuUIController : MonoBehaviour
         AnimateClosePanel(helpPanel.GetComponent<RectTransform>(), () =>
         {
             helpPanel.SetActive(false);
-            ShowMenuPanel();
+            
         });
     }
 

@@ -79,7 +79,7 @@ public class ClockwishController : MonoBehaviour
 
     void RotateBar()
     {
-        barRect.RotateAround(pivotPosition, Vector3.forward, rotateSpeed * Time.deltaTime);
+        barRect.RotateAround(pivotPosition, Vector3.forward, -rotateSpeed * Time.deltaTime);
     }
 
     void CheckCollision()
