@@ -15,12 +15,16 @@ MonoBehaviour:
   pivots:
   - x: 0
     y: 0
+    isPivotX: 0
   - x: 160
     y: 0
+    isPivotX: 0
   - x: -160
     y: 0
+    isPivotX: 0
   - x: 320
     y: 0
+    isPivotX: 1
   bells:
   - x: 210
     y: 270

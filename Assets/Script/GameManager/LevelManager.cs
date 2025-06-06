@@ -48,12 +48,21 @@ public class LevelManager : MonoBehaviour
             pivot.anchoredPosition = new Vector2(p.x, p.y);
             pivot.localScale = Vector3.zero;
 
+            // ✅ Gán isPivotX nếu có component Pivot
+            Pivot pivotScript = pivot.GetComponent<Pivot>();
+            if (pivotScript != null)
+            {
+                pivotScript.isPivotX = p.isPivotX;
+                pivotScript.pivotXEnabled = true; // Hoặc false tùy mục đích
+            }
+
             allPivots.Add(pivot);
 
             float delay = 0.3f * allPivots.Count;
             if (pivot != null)
                 pivot.DOScale(Vector3.one, 1.5f).SetEase(Ease.OutBack).SetDelay(delay);
         }
+
 
 
         // Create bars and win targets

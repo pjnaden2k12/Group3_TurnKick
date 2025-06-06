@@ -10,11 +10,13 @@ public class PlayerTriggerWin : MonoBehaviour
         if (other.CompareTag("WintargetShort"))
         {
             touchedShort = true;
+            CancelInvoke(nameof(ResetShort)); // tránh reset sớm
         }
 
-        if (other.gameObject.name == "WintargetLong")
+        if (other.CompareTag("WintargetLong"))
         {
             touchedLong = true;
+            CancelInvoke(nameof(ResetLong));
         }
 
         // Kiểm tra Bell
@@ -25,8 +27,7 @@ public class PlayerTriggerWin : MonoBehaviour
             if (bell == null || !bell.HasTouched) return; // Không chạm -> không win
         }
 
-        // Kiểm tra win
-        bool hasLongTarget = GameObject.Find("WintargetLong") != null;
+        bool hasLongTarget = GameObject.Find("WinTargetLong(Clone)") != null;
 
         if (hasLongTarget)
         {
@@ -43,6 +44,22 @@ public class PlayerTriggerWin : MonoBehaviour
             }
         }
     }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("WintargetShort"))
+        {
+            Invoke(nameof(ResetShort), 0.15f); // đợi 0.2s rồi mới reset
+        }
+
+        if (other.CompareTag("WintargetLong"))
+        {
+            Invoke(nameof(ResetLong), 0.15f);
+        }
+    }
+
+    void ResetShort() => touchedShort = false;
+    void ResetLong() => touchedLong = false;
 
     void Win()
     {

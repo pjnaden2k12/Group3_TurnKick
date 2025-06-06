@@ -23,6 +23,7 @@ public class BellData
 public class PivotData
 {
     public float x, y;
+    public bool isPivotX;
 }
 
 [System.Serializable]

@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using DG.Tweening;
+
 
 [RequireComponent(typeof(RectTransform), typeof(Image))]
 public class Pivot : MonoBehaviour, IPointerClickHandler
@@ -9,12 +11,19 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
     public Sprite clearSprite;
     public Sprite noClearSprite;
     public Sprite normalSprite;
+    public Sprite spriteX;
+
+    [Header("Chức năng PivotX")]
+    public bool isPivotX = false;
+    [HideInInspector] public bool pivotXEnabled = true;
 
     private Image pivotImage;
-    private RectTransform pivotRect;
+    [HideInInspector] public RectTransform pivotRect;
     private ClockwiseController controller;
 
     private const float detectionRadius = 160f;
+    
+
 
     void Start()
     {
@@ -22,11 +31,20 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
         pivotRect = GetComponent<RectTransform>();
         controller = FindFirstObjectByType<ClockwiseController>();
 
+        if (CompareTag("Untagged") || tag != "Pivot")
+            gameObject.tag = "Pivot";
+
         pivotImage.sprite = normalSprite;
     }
 
     void Update()
     {
+        if (!pivotXEnabled && isPivotX)
+        {
+            pivotImage.sprite = spriteX;
+            return;
+        }
+
         Vector2 pivotScreenPos = RectTransformUtility.WorldToScreenPoint(null, pivotRect.position);
         GameObject[] dots = GameObject.FindGameObjectsWithTag("Dot");
 
@@ -50,33 +68,94 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
             }
         }
 
-        // Đổi sprite tương ứng
         if (isTouching)
         {
-            pivotImage.sprite = clearSprite;
+            if (pivotImage.sprite != clearSprite)
+                ChangeSpriteWithBounce(clearSprite);
         }
         else if (isNear)
         {
-            pivotImage.sprite = noClearSprite;
+            if (pivotImage.sprite != noClearSprite)
+                ChangeSpriteWithBounce(noClearSprite);
         }
         else
         {
-            pivotImage.sprite = normalSprite;
+            if (pivotImage.sprite != normalSprite)
+                ChangeSpriteWithBounce(normalSprite);
         }
+
+
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (controller == null || controller.isRotating) return;
 
-        // Kiểm tra nếu dot đang nằm trong pivot thì thực hiện xoay
-        if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotA.position))
+        pivotRect.DOKill(); // Đảm bảo không bị chồng tween
+        pivotRect.DOScale(0.9f, 0.05f).SetEase(Ease.OutQuad).OnComplete(() =>
         {
-            controller.StartRotate(controller.dotA);
-        }
-        else if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotB.position))
+            pivotRect.DOScale(1.1f, 0.1f).SetEase(Ease.OutElastic).OnComplete(() =>
+            {
+                pivotRect.DOScale(1f, 0.08f); // Quay về scale chuẩn
+            });
+        });
+        // ✅ Mỗi lần click → toggle tất cả pivotX
+        ToggleAllPivotXStates();
+
+        // ✅ Cho phép xoay kể cả pivotX, miễn là pivot đó đang bật
+        if (pivotXEnabled)
         {
-            controller.StartRotate(controller.dotB);
+            if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotA.position))
+            {
+                controller.StartRotate(controller.dotA);
+            }
+            else if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotB.position))
+            {
+                controller.StartRotate(controller.dotB);
+            }
         }
+    }
+
+    void ToggleAllPivotXStates()
+    {
+        Pivot[] allPivots = FindObjectsByType<Pivot>(FindObjectsSortMode.None);
+
+        foreach (Pivot p in allPivots)
+        {
+            if (!p.isPivotX) continue;
+
+            // Nếu đang chứa clockwise thì không toggle
+            if (controller != null &&
+                (RectTransformUtility.RectangleContainsScreenPoint(p.pivotRect, controller.dotA.position) ||
+                 RectTransformUtility.RectangleContainsScreenPoint(p.pivotRect, controller.dotB.position)))
+            {
+                continue;
+            }
+            
+            p.pivotXEnabled = !p.pivotXEnabled;
+            p.tag = p.pivotXEnabled ? "Pivot" : "Untagged";
+            if (p.pivotXEnabled)
+                p.ChangeSpriteWithBounce(p.normalSprite);
+            else
+                p.ChangeSpriteWithBounce(p.spriteX);
+
+        }
+    }
+    private void ChangeSpriteWithBounce(Sprite newSprite)
+    {
+        pivotImage.DOKill(); // Dừng tween cũ nếu có
+
+        // Scale nhỏ lại trước khi đổi sprite
+        pivotRect.DOScale(0.7f, 0.05f).SetEase(Ease.InBack).OnComplete(() =>
+        {
+            pivotImage.sprite = newSprite;
+
+            // Scale phình ra như pudding
+            pivotRect.DOScale(1.1f, 0.1f).SetEase(Ease.OutBack).OnComplete(() =>
+            {
+                // Quay lại scale ban đầu
+                pivotRect.DOScale(1f, 0.08f);
+            });
+        });
     }
 }
