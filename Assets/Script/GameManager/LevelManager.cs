@@ -14,11 +14,14 @@ public class LevelManager : MonoBehaviour
     public RectTransform winTargetShortPrefab;
     public RectTransform winTargetLongPrefab;
 
+    public RectTransform bellPrefab;  // Thêm prefab bell
+
     public Transform canvasTransform;
     public TextMeshProUGUI levelText;
 
     private List<RectTransform> allPivots = new List<RectTransform>();
     private List<RectTransform> allBars = new List<RectTransform>();
+    private List<RectTransform> allBells = new List<RectTransform>();  // Danh sách bell
 
     private int currentLevelIndex = 0;
 
@@ -38,6 +41,7 @@ public class LevelManager : MonoBehaviour
         if (levelText != null)
             levelText.text = (levelIndex + 1).ToString();
 
+        // Spawn pivots
         foreach (var p in level.pivots)
         {
             var pivot = Instantiate(pivotPrefab, canvasTransform);
@@ -47,10 +51,12 @@ public class LevelManager : MonoBehaviour
             allPivots.Add(pivot);
 
             float delay = 0.3f * allPivots.Count;
-            if (pivot != null)  // Kiểm tra null trước khi tween
+            if (pivot != null)
                 pivot.DOScale(Vector3.one, 1.5f).SetEase(Ease.OutBack).SetDelay(delay);
         }
 
+
+        // Create bars and win targets
         RectTransform clockwiseShortBar = CreateBar(clockwiseShortPrefab, level.clockwiseShort, true, 999);
         CreateBar(winTargetShortPrefab, level.winTargetShort, true, 1);
 
@@ -59,25 +65,45 @@ public class LevelManager : MonoBehaviour
             RectTransform clockwiseLongBar = CreateBar(clockwiseLongPrefab, level.clockwiseLong, true, 5, clockwiseShortBar, keepWorldPosition: true);
             CreateBar(winTargetLongPrefab, level.winTargetLong, true, 0);
         }
+
+        // Spawn bells
+        if (level.bells != null)
+        {
+            foreach (var bell in level.bells)
+            {
+                var bellRect = Instantiate(bellPrefab, canvasTransform);
+                bellRect.anchoredPosition = new Vector2(bell.x, bell.y);
+                bellRect.localScale = Vector3.zero;
+                allBells.Add(bellRect);
+
+                float delay = 0.2f * allBells.Count;
+                bellRect.DOScale(Vector3.one, 1.2f).SetEase(Ease.OutBack).SetDelay(delay);
+            }
+        }
     }
 
     public void ClearLevel()
     {
-        // Xóa tất cả các pivot đã spawn
         foreach (var p in allPivots)
         {
-            DOTween.Kill(p); // Hủy tween của các pivot
-            Destroy(p.gameObject); // Xóa đối tượng pivot
+            DOTween.Kill(p);
+            Destroy(p.gameObject);
         }
         allPivots.Clear();
 
-        // Xóa tất cả các bar đã spawn
         foreach (var b in allBars)
         {
-            DOTween.Kill(b); // Hủy tween của các bar
-            Destroy(b.gameObject); // Xóa đối tượng bar
+            DOTween.Kill(b);
+            Destroy(b.gameObject);
         }
         allBars.Clear();
+
+        foreach (var bell in allBells)
+        {
+            DOTween.Kill(bell);
+            Destroy(bell.gameObject);
+        }
+        allBells.Clear();
     }
 
     RectTransform CreateBar(RectTransform prefab, ClockwiseData data, bool isInteractive, int siblingIndex, RectTransform parent = null, bool keepWorldPosition = false)
@@ -86,7 +112,7 @@ public class LevelManager : MonoBehaviour
             return null;
 
         RectTransform pivot = allPivots[data.pivotIndex];
-        if (pivot == null || pivot.gameObject == null) return null;  // Kiểm tra xem pivot có tồn tại không
+        if (pivot == null || pivot.gameObject == null) return null;
 
         Vector2 pivotPos = pivot.anchoredPosition;
         Vector2 baseOffset = new Vector2(0, -80f);
@@ -107,7 +133,7 @@ public class LevelManager : MonoBehaviour
 
             bar = Instantiate(prefab, temp);
             bar.anchoredPosition = Vector2.zero;
-            bar.rotation = Quaternion.Euler(0, 0, data.rotation); // Giữ đúng hướng gốc
+            bar.rotation = Quaternion.Euler(0, 0, data.rotation);
             bar.SetParent(parent, worldPositionStays: true);
 
             Destroy(tempGO);
@@ -121,14 +147,12 @@ public class LevelManager : MonoBehaviour
 
         bar.localScale = Vector3.one;
 
-        // Thêm CanvasGroup với alpha ban đầu là 0
         CanvasGroup cg = bar.gameObject.AddComponent<CanvasGroup>();
         cg.alpha = 0f;
 
-        // Tạo một sequence cho DOTween
         float delay = 0.3f * allBars.Count;
         Sequence seq = DOTween.Sequence();
-        if (bar != null && bar.gameObject != null)  // Kiểm tra xem bar có còn tồn tại không
+        if (bar != null && bar.gameObject != null)
         {
             seq.Append(bar.DOAnchorPos(bar.anchoredPosition, 0.8f).SetEase(Ease.OutBack).SetDelay(delay));
             seq.Join(cg.DOFade(1f, 0.8f).SetEase(Ease.Linear));
@@ -145,7 +169,6 @@ public class LevelManager : MonoBehaviour
         allBars.Add(bar);
         return bar;
     }
-
 
     Vector2 RotateOffset(Vector2 offset, float angleDegrees)
     {

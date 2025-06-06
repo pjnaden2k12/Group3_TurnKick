@@ -17,7 +17,15 @@ public class PlayerTriggerWin : MonoBehaviour
             touchedLong = true;
         }
 
-        // Kiểm tra lại mỗi lần va chạm xem đối tượng còn tồn tại không
+        // Kiểm tra Bell
+        GameObject bellObj = GameObject.FindWithTag("Bell");
+        if (bellObj != null)
+        {
+            BellStateController bell = bellObj.GetComponent<BellStateController>();
+            if (bell == null || !bell.HasTouched) return; // Không chạm -> không win
+        }
+
+        // Kiểm tra win
         bool hasLongTarget = GameObject.Find("WintargetLong") != null;
 
         if (hasLongTarget)
@@ -39,7 +47,6 @@ public class PlayerTriggerWin : MonoBehaviour
     void Win()
     {
         Debug.Log("Chiến thắng!");
-        // Time.timeScale = 0f; // Dừng game nếu cần
-        enabled = false; // Tránh gọi Win nhiều lần
+        enabled = false;
     }
 }

@@ -4,7 +4,7 @@ using DG.Tweening;
 
 public class ClockwiseController : MonoBehaviour
 {
-    public GameObject afterimagePrefab; // Prefab làm tàn ảnh
+    public GameObject afterimagePrefab;
     public float afterimageInterval = 0.01f;
     public float afterimageLifetime = 0.1f;
     private float afterimageTimer = 0f;
@@ -25,13 +25,16 @@ public class ClockwiseController : MonoBehaviour
     private bool dotAHasLeftStartPivot = false;
     private bool dotBHasLeftStartPivot = false;
 
-    // Event phát khi bắt đầu xoay
+    private float previousDotADistance = float.MaxValue;
+    private float previousDotBDistance = float.MaxValue;
+
     public event Action OnRotationStarted;
 
     void Update()
     {
         if (isRotating)
         {
+            pivotPosition = currentPivot.position;
             RotateBar();
             CheckCollision();
 
@@ -43,28 +46,26 @@ public class ClockwiseController : MonoBehaviour
             }
         }
     }
+
     void CreateAfterimage()
     {
         GameObject ghost = Instantiate(afterimagePrefab, barRect.position, barRect.rotation, barRect.parent);
         ghost.transform.localScale = barRect.localScale;
 
-        // Làm mờ dần và tự hủy sau một thời gian
         CanvasGroup cg = ghost.AddComponent<CanvasGroup>();
         cg.alpha = 1f;
 
-        ghost.transform.SetAsFirstSibling(); // Cho nó nằm dưới thanh gốc
+        ghost.transform.SetAsFirstSibling();
 
-        DG.Tweening.DOTween.To(() => cg.alpha, x => cg.alpha = x, 0f, afterimageLifetime)
+        DOTween.To(() => cg.alpha, x => cg.alpha = x, 0f, afterimageLifetime)
             .OnComplete(() => Destroy(ghost));
     }
-
 
     public void StartRotate(RectTransform pivotDot)
     {
         if (isRotating) return;
 
         currentPivot = pivotDot;
-        pivotPosition = currentPivot.position;
         isRotating = true;
 
         dotAStartPivot = GetPivotUnderDot(dotA);
@@ -73,7 +74,9 @@ public class ClockwiseController : MonoBehaviour
         dotAHasLeftStartPivot = false;
         dotBHasLeftStartPivot = false;
 
-        // Phát sự kiện báo bắt đầu xoay
+        previousDotADistance = float.MaxValue;
+        previousDotBDistance = float.MaxValue;
+
         OnRotationStarted?.Invoke();
     }
 
@@ -86,51 +89,53 @@ public class ClockwiseController : MonoBehaviour
     {
         GameObject[] pivots = GameObject.FindGameObjectsWithTag("Pivot");
 
-        if (currentPivot == dotA)
+        foreach (GameObject pivot in pivots)
         {
-            if (!dotBHasLeftStartPivot)
-            {
-                if (!IsDotInPivot(dotB, dotBStartPivot))
-                {
-                    dotBHasLeftStartPivot = true;
-                }
-            }
+            RectTransform pivotRect = pivot.GetComponent<RectTransform>();
 
-            foreach (GameObject pivot in pivots)
+            if (currentPivot == dotA)
             {
-                RectTransform pivotRect = pivot.GetComponent<RectTransform>();
+                float currentDist = Vector3.Distance(dotB.position, pivotRect.position);
 
-                if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, dotB.position))
+                if (!dotBHasLeftStartPivot)
                 {
-                    if (dotBHasLeftStartPivot)
+                    if (!IsDotInPivot(dotB, dotBStartPivot))
                     {
-                        StopRotation();
-                        break;
+                        dotBHasLeftStartPivot = true;
                     }
                 }
-            }
-        }
-        else if (currentPivot == dotB)
-        {
-            if (!dotAHasLeftStartPivot)
-            {
-                if (!IsDotInPivot(dotA, dotAStartPivot))
-                {
-                    dotAHasLeftStartPivot = true;
-                }
-            }
 
-            foreach (GameObject pivot in pivots)
-            {
-                RectTransform pivotRect = pivot.GetComponent<RectTransform>();
-
-                if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, dotA.position))
+                if (dotBHasLeftStartPivot)
                 {
-                    if (dotAHasLeftStartPivot)
+                    // Dừng khi dotB đã đi qua tâm pivot
+                    if (previousDotBDistance < 1f && currentDist > previousDotBDistance)
                     {
                         StopRotation();
-                        break;
+                        return;
                     }
+                    previousDotBDistance = currentDist;
+                }
+            }
+            else if (currentPivot == dotB)
+            {
+                float currentDist = Vector3.Distance(dotA.position, pivotRect.position);
+
+                if (!dotAHasLeftStartPivot)
+                {
+                    if (!IsDotInPivot(dotA, dotAStartPivot))
+                    {
+                        dotAHasLeftStartPivot = true;
+                    }
+                }
+
+                if (dotAHasLeftStartPivot)
+                {
+                    if (previousDotADistance < 1f && currentDist > previousDotADistance)
+                    {
+                        StopRotation();
+                        return;
+                    }
+                    previousDotADistance = currentDist;
                 }
             }
         }
@@ -139,6 +144,8 @@ public class ClockwiseController : MonoBehaviour
     void StopRotation()
     {
         isRotating = false;
+        previousDotADistance = float.MaxValue;
+        previousDotBDistance = float.MaxValue;
     }
 
     RectTransform GetPivotUnderDot(RectTransform dot)

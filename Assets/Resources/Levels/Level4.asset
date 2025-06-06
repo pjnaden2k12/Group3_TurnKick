@@ -21,6 +21,9 @@ MonoBehaviour:
     y: 0
   - x: 320
     y: 0
+  bells:
+  - x: 210
+    y: 270
   clockwiseShort:
     pivotIndex: 0
     rotation: 0

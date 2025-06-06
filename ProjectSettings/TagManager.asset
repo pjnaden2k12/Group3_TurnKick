@@ -8,6 +8,11 @@ TagManager:
   - Dot
   - WintargetLong
   - WintargetShort
+  - Afterimage
+  - ClockwiseLong
+  - ClockwiseShort
+  - Clockwise
+  - Bell
   layers:
   - Default
   - TransparentFX
