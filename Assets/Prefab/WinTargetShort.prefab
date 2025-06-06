@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 6846903423796507709}
   - component: {fileID: 5849513705148358115}
   - component: {fileID: 9215530912947854679}
-  - component: {fileID: 3341445384218175602}
+  - component: {fileID: 5579091115143183628}
   m_Layer: 5
   m_Name: Image
-  m_TagString: wintargetShort
+  m_TagString: WintargetShort
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35,8 +35,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0, y: -173}
-  m_SizeDelta: {x: 13, y: 40}
+  m_AnchoredPosition: {x: -0, y: -130}
+  m_SizeDelta: {x: 13, y: 73.1501}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5849513705148358115
 CanvasRenderer:
@@ -76,7 +76,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!61 &3341445384218175602
+--- !u!61 &5579091115143183628
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -110,7 +110,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.09783673, y: 0.20512962}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -120,7 +120,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 13.525682, y: 39.959316}
+  m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
 --- !u!1 &8755289461852027164
 GameObject:

@@ -196,6 +196,7 @@ public class MenuUIController : MonoBehaviour
     // Nút quay về level panel
     void OnBackToLevelsClicked()
     {
+        DestroyAllAfterimages(); // Xóa tất cả tàn ảnh
         DOTween.KillAll();
         // Tắt gameplay, mở lại level panel
         gamePlayPanel.SetActive(false);
@@ -232,4 +233,14 @@ public class MenuUIController : MonoBehaviour
         seq.Join(cg.DOFade(1f, 0.5f));
         seq.Join(gamePlayPanelImage.DOFade(1f, 0.5f));  // fade in ảnh panel
     }
+    
+        void DestroyAllAfterimages()
+    {
+        GameObject[] afterimages = GameObject.FindGameObjectsWithTag("Afterimage");
+        foreach (GameObject obj in afterimages)
+        {
+            Destroy(obj);
+        }
+    }
+
 }

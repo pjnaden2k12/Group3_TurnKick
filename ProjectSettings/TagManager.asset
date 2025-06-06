@@ -6,9 +6,8 @@ TagManager:
   tags:
   - Pivot
   - Dot
-  - WinTarget
-  - Minute
-  - CheckPoint
+  - WintargetLong
+  - WintargetShort
   layers:
   - Default
   - TransparentFX

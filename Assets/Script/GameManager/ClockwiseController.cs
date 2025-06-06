@@ -5,8 +5,8 @@ using DG.Tweening;
 public class ClockwiseController : MonoBehaviour
 {
     public GameObject afterimagePrefab; // Prefab làm tàn ảnh
-    public float afterimageInterval = 0.05f;
-    public float afterimageLifetime = 0.3f;
+    public float afterimageInterval = 0.01f;
+    public float afterimageLifetime = 0.1f;
     private float afterimageTimer = 0f;
 
     public RectTransform barRect;   // Thanh

@@ -1,43 +1,45 @@
 using UnityEngine;
 
-public class WinConditionChecker : MonoBehaviour
+public class PlayerTriggerWin : MonoBehaviour
 {
-    public GameObject clockwiseShort; // Reference đến đối tượng clockwiseShort
-    public GameObject clockwiseLong;  // Reference đến đối tượng clockwiseLong
-    public string wintargetShortTag = "wintargetShort"; // Tag của mục tiêu chiến thắng cho clockwiseShort
-    public string wintargetLongTag = "wintargetLong"; // Tag của mục tiêu chiến thắng cho clockwiseLong
+    private bool touchedShort = false;
+    private bool touchedLong = false;
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Checking trigger for: " + other.gameObject.name);  // Kiểm tra xem có va chạm xảy ra không
-
-        if (clockwiseLong == null)
+        if (other.CompareTag("WintargetShort"))
         {
-            // Kiểm tra clockwiseShort và wintargetShort
-            if (clockwiseShort != null && other.CompareTag(wintargetShortTag))
+            touchedShort = true;
+        }
+
+        if (other.gameObject.name == "WintargetLong")
+        {
+            touchedLong = true;
+        }
+
+        // Kiểm tra lại mỗi lần va chạm xem đối tượng còn tồn tại không
+        bool hasLongTarget = GameObject.Find("WintargetLong") != null;
+
+        if (hasLongTarget)
+        {
+            if (touchedShort && touchedLong)
             {
-                Debug.Log("You win with clockwiseShort!");  // Thông báo khi chiến thắng
-                Win(); // Điều kiện chiến thắng
+                Win();
             }
         }
         else
         {
-            // Kiểm tra đồng thời clockwiseShort và wintargetShort, clockwiseLong và wintargetLong
-            bool clockwiseShortWin = (clockwiseShort != null && other.CompareTag(wintargetShortTag));
-            bool clockwiseLongWin = (clockwiseLong != null && other.CompareTag(wintargetLongTag));
-
-            if (clockwiseShortWin && clockwiseLongWin)
+            if (touchedShort)
             {
-                Debug.Log("You win with both clockwiseShort and clockwiseLong!"); // Thông báo chiến thắng
                 Win();
             }
         }
     }
 
-
     void Win()
     {
-        Debug.Log("You win!"); // Thông báo chiến thắng
-        // Thực hiện hành động chiến thắng tại đây (ví dụ: chuyển cảnh, hiển thị UI chiến thắng)
+        Debug.Log("Chiến thắng!");
+        // Time.timeScale = 0f; // Dừng game nếu cần
+        enabled = false; // Tránh gọi Win nhiều lần
     }
 }
