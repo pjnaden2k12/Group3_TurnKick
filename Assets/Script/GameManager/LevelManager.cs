@@ -14,16 +14,26 @@ public class LevelManager : MonoBehaviour
     public RectTransform winTargetShortPrefab;
     public RectTransform winTargetLongPrefab;
 
-    public RectTransform bellPrefab;  // Thêm prefab bell
+    public RectTransform bellPrefab;
 
     public Transform canvasTransform;
     public TextMeshProUGUI levelText;
 
+    public GameTimer gameTimer;  // Tham chiếu GameTimer để điều khiển đếm giờ
+
     private List<RectTransform> allPivots = new List<RectTransform>();
     private List<RectTransform> allBars = new List<RectTransform>();
-    private List<RectTransform> allBells = new List<RectTransform>();  // Danh sách bell
+    private List<RectTransform> allBells = new List<RectTransform>();
 
     private int currentLevelIndex = 0;
+
+    void Start()
+    {
+        if (gameTimer != null)
+            gameTimer.OnTimeUp += OnTimeOut;
+
+        LoadLevel(currentLevelIndex);
+    }
 
     public void LoadLevel(int levelIndex)
     {
@@ -48,12 +58,11 @@ public class LevelManager : MonoBehaviour
             pivot.anchoredPosition = new Vector2(p.x, p.y);
             pivot.localScale = Vector3.zero;
 
-            // ✅ Gán isPivotX nếu có component Pivot
             Pivot pivotScript = pivot.GetComponent<Pivot>();
             if (pivotScript != null)
             {
                 pivotScript.isPivotX = p.isPivotX;
-                pivotScript.pivotXEnabled = true; // Hoặc false tùy mục đích
+                pivotScript.pivotXEnabled = true;
             }
 
             allPivots.Add(pivot);
@@ -62,8 +71,6 @@ public class LevelManager : MonoBehaviour
             if (pivot != null)
                 pivot.DOScale(Vector3.one, 1.5f).SetEase(Ease.OutBack).SetDelay(delay);
         }
-
-
 
         // Create bars and win targets
         RectTransform clockwiseShortBar = CreateBar(clockwiseShortPrefab, level.clockwiseShort, true, 999);
@@ -88,6 +95,13 @@ public class LevelManager : MonoBehaviour
                 float delay = 0.2f * allBells.Count;
                 bellRect.DOScale(Vector3.one, 1.2f).SetEase(Ease.OutBack).SetDelay(delay);
             }
+        }
+
+        // Khởi động đếm ngược thời gian từ LevelData
+        if (gameTimer != null)
+        {
+            gameTimer.countdownTime = level.timeLimit;
+            gameTimer.StartTimer();
         }
     }
 
@@ -196,5 +210,12 @@ public class LevelManager : MonoBehaviour
         if (currentLevelIndex >= levels.Length)
             currentLevelIndex = 0;
         LoadLevel(currentLevelIndex);
+    }
+
+    void OnTimeOut()
+    {
+        Debug.Log("Hết giờ! Bạn thua rồi.");
+        // Ví dụ: Reload lại level hoặc hiện UI thua cuộc
+        // LoadLevel(currentLevelIndex);
     }
 }

@@ -141,12 +141,28 @@ public class ClockwiseController : MonoBehaviour
         }
     }
 
-    void StopRotation()
+    public void StopRotation()
     {
         isRotating = false;
         previousDotADistance = float.MaxValue;
         previousDotBDistance = float.MaxValue;
+
+        AlignBarToPivot();
     }
+    void AlignBarToPivot()
+    {
+        if (currentPivot == dotA)
+        {
+            Vector3 offset = currentPivot.position - dotA.position;
+            barRect.position += offset;
+        }
+        else if (currentPivot == dotB)
+        {
+            Vector3 offset = currentPivot.position - dotB.position;
+            barRect.position += offset;
+        }
+    }
+
 
     RectTransform GetPivotUnderDot(RectTransform dot)
     {

@@ -4,6 +4,19 @@ public class PlayerTriggerWin : MonoBehaviour
 {
     private bool touchedShort = false;
     private bool touchedLong = false;
+    public GameManager gameManager;
+
+    private void Awake()
+    {
+        if (gameManager == null)
+        {
+            gameManager = GameObject.FindFirstObjectByType<GameManager>();
+            if (gameManager == null)
+            {
+                Debug.LogWarning("Không tìm thấy GameManager trong scene!");
+            }
+        }
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -63,7 +76,15 @@ public class PlayerTriggerWin : MonoBehaviour
 
     void Win()
     {
-        Debug.Log("Chiến thắng!");
+        // Gọi hàm WinGame của GameManager
+        if (gameManager != null)
+        {
+            gameManager.WinGame();
+        }
+        else
+        {
+            Debug.LogWarning("GameManager chưa được gán trong PlayerTriggerWin!");
+        }
         enabled = false;
     }
 }

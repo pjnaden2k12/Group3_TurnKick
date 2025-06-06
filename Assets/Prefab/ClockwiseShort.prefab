@@ -252,7 +252,7 @@ MonoBehaviour:
   barRect: {fileID: 5241023511892980979}
   dotA: {fileID: 2253573465534849670}
   dotB: {fileID: 4466714082654964850}
-  rotateSpeed: 170
+  rotateSpeed: 140
   isRotating: 0
   currentPivot: {fileID: 0}
 --- !u!61 &4982941073222052829
@@ -460,6 +460,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8e3f33ec9ab1ac478904bbe4f2bfa22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
 --- !u!1 &9133096449294598138
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,6 +593,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8e3f33ec9ab1ac478904bbe4f2bfa22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
 --- !u!1001 &2512155492799723926
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -602,15 +604,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 848754192820975060, guid: 23018a6a5de0aeb4ca7f0378a659001f, type: 3}
       propertyPath: m_Radius
-      value: 14.66002
+      value: 15.787852
       objectReference: {fileID: 0}
     - target: {fileID: 848754192820975060, guid: 23018a6a5de0aeb4ca7f0378a659001f, type: 3}
       propertyPath: m_Offset.x
-      value: -0.14737055
+      value: -0.32090887
       objectReference: {fileID: 0}
     - target: {fileID: 848754192820975060, guid: 23018a6a5de0aeb4ca7f0378a659001f, type: 3}
       propertyPath: m_Offset.y
-      value: 0.039477482
+      value: 0.038099203
       objectReference: {fileID: 0}
     - target: {fileID: 4439059655664917264, guid: 23018a6a5de0aeb4ca7f0378a659001f, type: 3}
       propertyPath: m_Pivot.x

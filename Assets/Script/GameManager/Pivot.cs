@@ -22,7 +22,7 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
     private ClockwiseController controller;
 
     private const float detectionRadius = 160f;
-    
+    public GameTimer gameTimer;
 
 
     void Start()
@@ -96,22 +96,31 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
         {
             pivotRect.DOScale(1.1f, 0.1f).SetEase(Ease.OutElastic).OnComplete(() =>
             {
-                pivotRect.DOScale(1f, 0.08f); // Quay về scale chuẩn
+                pivotRect.DOScale(1f, 0.08f);
             });
         });
-        // ✅ Mỗi lần click → toggle tất cả pivotX
+
         ToggleAllPivotXStates();
 
-        // ✅ Cho phép xoay kể cả pivotX, miễn là pivot đó đang bật
         if (pivotXEnabled)
         {
+            bool valid = false;
+
             if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotA.position))
             {
                 controller.StartRotate(controller.dotA);
+                valid = true;
             }
             else if (RectTransformUtility.RectangleContainsScreenPoint(pivotRect, controller.dotB.position))
             {
                 controller.StartRotate(controller.dotB);
+                valid = true;
+            }
+
+            // ✅ Nếu bắt đầu quay thành công, bắt đầu đếm ngược
+            if (valid && gameTimer != null)
+            {
+                gameTimer.StartTimer();
             }
         }
     }

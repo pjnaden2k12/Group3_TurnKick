@@ -26,7 +26,7 @@ RectTransform:
   m_GameObject: {fileID: 2115374361314717006}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 30.570393, y: 30.570393, z: 30.570393}
+  m_LocalScale: {x: 33.81391, y: 33.81391, z: 33.81391}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 442470797611243442}
@@ -260,8 +260,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.20603117, y: 0}
-  m_Radius: 29.857845
+  m_Offset: {x: -0.1617242, y: 0}
+  m_Radius: 34.197895
 --- !u!114 &7070380341062801743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -278,6 +278,7 @@ MonoBehaviour:
   noClearSprite: {fileID: 5139773703192522367, guid: 022bf026e0cdecc468c299e291ae920b, type: 3}
   normalSprite: {fileID: -4773789486902165062, guid: be5f0d9e29e9c584f83b1a68a5fa05ef, type: 3}
   spriteX: {fileID: -8527568592950175283, guid: e51a0cdf1d8181246b3b99d388d31371, type: 3}
-  isPivotX: 0
+  isPivotX: 1
   pivotXEnabled: 1
   pivotRect: {fileID: 0}
+  gameTimer: {fileID: 0}
