@@ -21,6 +21,6 @@ public class PivotData
 [System.Serializable]
 public class ClockwiseData
 {
-    public int pivotIndex;
-    public float rotation;
+    public int pivotIndex;  // Chỉ số của pivot mà bar/quay liên kết
+    public float rotation;   // Góc quay của bar/quay
 }

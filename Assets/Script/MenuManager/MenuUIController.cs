@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System.Collections.Generic;
 using TMPro;
+
 public class MenuUIController : MonoBehaviour
 {
     [Header("Panels")]
@@ -156,7 +157,6 @@ public class MenuUIController : MonoBehaviour
         AnimateClosePanel(helpPanel.GetComponent<RectTransform>(), () =>
         {
             helpPanel.SetActive(false);
-            
         });
     }
 
@@ -196,6 +196,7 @@ public class MenuUIController : MonoBehaviour
     // Nút quay về level panel
     void OnBackToLevelsClicked()
     {
+        DOTween.KillAll();
         // Tắt gameplay, mở lại level panel
         gamePlayPanel.SetActive(false);
         levelPanel.SetActive(true);
@@ -205,8 +206,18 @@ public class MenuUIController : MonoBehaviour
     // Nút chơi lại level hiện tại
     void OnRestartLevelClicked()
     {
-        levelManager.LoadLevel(currentLevelIndex);
+        // Hủy tất cả tween và clear các prefab đã spawn
+        DOTween.KillAll();  // Hủy tất cả tween đang chạy
+        ClearSpawnedPrefabs(); // Xóa tất cả các prefab đã spawn
+        levelManager.LoadLevel(currentLevelIndex); // Tải lại level hiện tại
     }
+
+    void ClearSpawnedPrefabs()
+    {
+        // Clear mọi đối tượng đã spawn trong LevelManager
+        levelManager.ClearLevel(); 
+    }
+
     public void AnimateOpenGamePlayPanel()
     {
         CanvasGroup cg = gamePlayPanel.GetComponent<CanvasGroup>();

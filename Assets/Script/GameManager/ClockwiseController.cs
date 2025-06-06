@@ -50,7 +50,7 @@ public class ClockwiseController : MonoBehaviour
 
         // Làm mờ dần và tự hủy sau một thời gian
         CanvasGroup cg = ghost.AddComponent<CanvasGroup>();
-        cg.alpha = 1.5f;
+        cg.alpha = 1f;
 
         ghost.transform.SetAsFirstSibling(); // Cho nó nằm dưới thanh gốc
 
