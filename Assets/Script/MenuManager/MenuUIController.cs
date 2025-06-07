@@ -34,6 +34,9 @@ public class MenuUIController : MonoBehaviour
     public TextMeshProUGUI levelText;
     public Image gamePlayPanelImage;
 
+    [Header("Audio")] // Gán AudioSource trong Inspector
+    public AudioClip clickClip;     // Gán clip âm thanh click nút trong Inspector
+
     public static MenuUIController Instance;
     private int currentLevelIndex = 0;
 
@@ -49,12 +52,13 @@ public class MenuUIController : MonoBehaviour
 
     void Start()
     {
-        playButton.onClick.AddListener(OnPlayClicked);
-        helpButton.onClick.AddListener(OnHelpClicked);
-        backFromHelpButton.onClick.AddListener(OnBackFromHelp);
-        backFromLevelButton.onClick.AddListener(OnBackFromLevel);
-        btnBackToLevels.onClick.AddListener(OnBackToLevelsClicked);
-        btnRestartLevel.onClick.AddListener(OnRestartLevelClicked);
+        // Thêm audio khi click các nút
+        playButton.onClick.AddListener(() => { PlayClickSound(); OnPlayClicked(); });
+        helpButton.onClick.AddListener(() => { PlayClickSound(); OnHelpClicked(); });
+        backFromHelpButton.onClick.AddListener(() => { PlayClickSound(); OnBackFromHelp(); });
+        backFromLevelButton.onClick.AddListener(() => { PlayClickSound(); OnBackFromLevel(); });
+        btnBackToLevels.onClick.AddListener(() => { PlayClickSound(); OnBackToLevelsClicked(); });
+        btnRestartLevel.onClick.AddListener(() => { PlayClickSound(); OnRestartLevelClicked(); });
 
         levelPanel.SetActive(false);
         helpPanel.SetActive(false);
@@ -62,6 +66,15 @@ public class MenuUIController : MonoBehaviour
 
         AnimateMenu();
     }
+
+    void PlayClickSound()
+    {
+        if (clickClip != null)
+        {
+            AudioSource.PlayClipAtPoint(clickClip, Camera.main.transform.position);
+        }
+    }
+
 
     void AnimateMenu()
     {
@@ -75,13 +88,18 @@ public class MenuUIController : MonoBehaviour
         Vector3 originalPos = logo.localPosition;
         logo.localPosition = originalPos + new Vector3(0, 800f, 0);
         logoTween?.Kill();
-        logoTween = logo.DOLocalMove(originalPos, 1f).SetEase(Ease.OutBack);
+        logoTween = logo.DOLocalMove(originalPos, 1f).SetEase(Ease.OutBack).SetTarget(logo);
+
+        playButton.transform.DOKill();
+        helpButton.transform.DOKill();
 
         playButton.transform.localScale = Vector3.zero;
         helpButton.transform.localScale = Vector3.zero;
 
-        playButton.transform.DOScale(1f, 0.6f).SetEase(Ease.OutBack).SetDelay(0.4f);
-        helpButton.transform.DOScale(1f, 0.6f).SetEase(Ease.OutBack).SetDelay(0.6f);
+        Tween t1 = playButton.transform.DOScale(1f, 0.6f).SetEase(Ease.OutBack).SetDelay(0.4f).SetTarget(playButton.transform);
+        Tween t2 = helpButton.transform.DOScale(1f, 0.6f).SetEase(Ease.OutBack).SetDelay(0.6f).SetTarget(helpButton.transform);
+        buttonTweens.Add(t1);
+        buttonTweens.Add(t2);
     }
 
     void AnimatePanel(RectTransform panel, RectTransform[] buttons)
@@ -96,15 +114,17 @@ public class MenuUIController : MonoBehaviour
 
         panelTween = DOTween.Sequence()
             .Append(panel.DOScale(1f, 0.4f).SetEase(Ease.OutBack))
-            .Join(cg.DOFade(1f, 0.4f));
+            .Join(cg.DOFade(1f, 0.4f))
+            .SetTarget(panel);
 
         KillButtonTweens();
 
         float delay = 0.05f;
         foreach (RectTransform btn in buttons)
         {
+            btn.transform.DOKill();
             btn.localScale = Vector3.zero;
-            Tween t = btn.DOScale(1f, 0.3f).SetEase(Ease.OutBack).SetDelay(delay);
+            Tween t = btn.DOScale(1f, 0.3f).SetEase(Ease.OutBack).SetDelay(delay).SetTarget(btn.transform);
             buttonTweens.Add(t);
             delay += 0.05f;
         }
@@ -121,7 +141,8 @@ public class MenuUIController : MonoBehaviour
         DOTween.Sequence()
             .Append(panel.DOScale(0.8f, 0.5f).SetEase(Ease.InBack))
             .Join(cg.DOFade(0f, 0.5f))
-            .OnComplete(() => onComplete?.Invoke());
+            .OnComplete(() => onComplete?.Invoke())
+            .SetTarget(panel);
     }
 
     void KillButtonTweens()
@@ -207,16 +228,16 @@ public class MenuUIController : MonoBehaviour
 
     void OnRestartLevelClicked()
     {
-        // Lấy current level từ levelManager
+        DestroyAllAfterimages();
         currentLevelIndex = levelManager.CurrentLevelIndex;
         Debug.Log($"Restarting level {currentLevelIndex + 1}");
 
         DOTween.KillAll();
+
         ClearSpawnedPrefabs();
+        levelManager.ClearLevel();
         levelManager.LoadLevel(currentLevelIndex);
     }
-
-
 
     void ClearSpawnedPrefabs()
     {
@@ -237,7 +258,8 @@ public class MenuUIController : MonoBehaviour
         gamePlayPanelTween = DOTween.Sequence()
             .Append(gamePlayPanel.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack))
             .Join(cg.DOFade(1f, 0.5f))
-            .Join(gamePlayPanelImage.DOFade(1f, 0.5f));
+            .Join(gamePlayPanelImage.DOFade(1f, 0.5f))
+            .SetTarget(gamePlayPanel.transform);
     }
 
     void DestroyAllAfterimages()
@@ -264,12 +286,10 @@ public class MenuUIController : MonoBehaviour
                 btn.interactable = true;
                 if (txt != null) txt.text = $"{i + 1}";
             }
-            
             else
             {
-                levelButtons[i].gameObject.SetActive(false); // ẩn hoàn toàn
+                levelButtons[i].gameObject.SetActive(false);
             }
         }
     }
-
 }

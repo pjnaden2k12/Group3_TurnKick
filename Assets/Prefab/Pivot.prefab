@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 7070380341062801743}
   m_Layer: 5
   m_Name: Pivot
-  m_TagString: Pivot
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -169,8 +169,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.1617242, y: 0}
-  m_Radius: 34.197895
+  m_Offset: {x: 0.5753937, y: 0}
+  m_Radius: 35.946335
 --- !u!114 &7070380341062801743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -187,9 +187,9 @@ MonoBehaviour:
   noClearSprite: {fileID: 5139773703192522367, guid: 022bf026e0cdecc468c299e291ae920b, type: 3}
   normalSprite: {fileID: -4773789486902165062, guid: be5f0d9e29e9c584f83b1a68a5fa05ef, type: 3}
   spriteX: {fileID: -8527568592950175283, guid: e51a0cdf1d8181246b3b99d388d31371, type: 3}
-  isPivotX: 1
+  isPivotX: 0
   pivotXEnabled: 1
-  fixedPosition: {fileID: 6705819529505635884}
+  clickSound: {fileID: 8300000, guid: cbbdb319467cd6d4c8893df83b322072, type: 3}
   pivotRect: {fileID: 0}
 --- !u!1 &7247804149263472223
 GameObject:
@@ -202,9 +202,10 @@ GameObject:
   - component: {fileID: 6705819529505635884}
   - component: {fileID: 481760654342238503}
   - component: {fileID: 2279543359690203997}
+  - component: {fileID: 1056820739798626033}
   m_Layer: 5
   m_Name: Image
-  m_TagString: Untagged
+  m_TagString: Stop
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -266,3 +267,39 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!58 &1056820739798626033
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7247804149263472223}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.058288574, y: 0.38354492}
+  m_Radius: 19.935211

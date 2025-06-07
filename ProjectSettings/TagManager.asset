@@ -13,6 +13,7 @@ TagManager:
   - ClockwiseShort
   - Clockwise
   - Bell
+  - Stop
   layers:
   - Default
   - TransparentFX

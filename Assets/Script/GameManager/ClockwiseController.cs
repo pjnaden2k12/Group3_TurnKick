@@ -18,6 +18,9 @@ public class ClockwiseController : MonoBehaviour
     [HideInInspector] public RectTransform currentPivot;
 
     private Vector3 pivotPosition;
+    [Header("Âm thanh")]
+    public AudioClip rotateSoundClip;
+    private AudioSource rotateAudioSource;
 
     private RectTransform dotAStartPivot = null;
     private RectTransform dotBStartPivot = null;
@@ -28,12 +31,31 @@ public class ClockwiseController : MonoBehaviour
     private float previousDotADistance = float.MaxValue;
     private float previousDotBDistance = float.MaxValue;
 
+    private Vector3 previousDotAPosition;
+    private Vector3 previousDotBPosition;
+
     public event Action OnRotationStarted;
+
+    void Start()
+    {
+        rotateAudioSource = gameObject.AddComponent<AudioSource>();
+        rotateAudioSource.clip = rotateSoundClip;
+        rotateAudioSource.loop = true;
+        rotateAudioSource.playOnAwake = false;
+
+        // Khởi tạo vị trí trước
+        previousDotAPosition = dotA.position;
+        previousDotBPosition = dotB.position;
+    }
 
     void Update()
     {
         if (isRotating)
         {
+            // Lưu vị trí trước khi update
+            previousDotAPosition = dotA.position;
+            previousDotBPosition = dotB.position;
+
             pivotPosition = currentPivot.position;
             RotateBar();
             CheckCollision();
@@ -63,6 +85,11 @@ public class ClockwiseController : MonoBehaviour
 
     public void StartRotate(RectTransform pivotDot)
     {
+        if (rotateSoundClip != null && !rotateAudioSource.isPlaying)
+        {
+            rotateAudioSource.Play();
+        }
+
         if (isRotating) return;
 
         currentPivot = pivotDot;
@@ -107,7 +134,13 @@ public class ClockwiseController : MonoBehaviour
 
                 if (dotBHasLeftStartPivot)
                 {
-                    // Dừng khi dotB đã đi qua tâm pivot
+                    // Thay kiểm tra dừng bằng kiểm tra va chạm có hướng
+                    if (IsDotInStopWithDirection(dotB, previousDotBPosition))
+                    {
+                        StopRotation();
+                        return;
+                    }
+
                     if (previousDotBDistance < 1f && currentDist > previousDotBDistance)
                     {
                         StopRotation();
@@ -130,6 +163,13 @@ public class ClockwiseController : MonoBehaviour
 
                 if (dotAHasLeftStartPivot)
                 {
+                    // Thay kiểm tra dừng bằng kiểm tra va chạm có hướng
+                    if (IsDotInStopWithDirection(dotA, previousDotAPosition))
+                    {
+                        StopRotation();
+                        return;
+                    }
+
                     if (previousDotADistance < 1f && currentDist > previousDotADistance)
                     {
                         StopRotation();
@@ -143,12 +183,18 @@ public class ClockwiseController : MonoBehaviour
 
     public void StopRotation()
     {
+        if (rotateAudioSource.isPlaying)
+        {
+            rotateAudioSource.Stop();
+        }
+
         isRotating = false;
         previousDotADistance = float.MaxValue;
         previousDotBDistance = float.MaxValue;
 
         AlignBarToPivot();
     }
+
     void AlignBarToPivot()
     {
         if (currentPivot == dotA)
@@ -163,10 +209,9 @@ public class ClockwiseController : MonoBehaviour
         }
     }
 
-
     RectTransform GetPivotUnderDot(RectTransform dot)
     {
-        GameObject[] pivots = GameObject.FindGameObjectsWithTag("Pivot");
+        GameObject[] pivots = GameObject.FindGameObjectsWithTag("Stop");
 
         foreach (GameObject pivot in pivots)
         {
@@ -184,5 +229,31 @@ public class ClockwiseController : MonoBehaviour
     {
         if (pivot == null) return false;
         return RectTransformUtility.RectangleContainsScreenPoint(pivot, dot.position);
+    }
+
+    bool IsDotInStopWithDirection(RectTransform dot, Vector3 previousPos)
+    {
+        GameObject[] stops = GameObject.FindGameObjectsWithTag("Stop");
+
+        Vector3 currentPos = dot.position;
+        Vector3 velocity = currentPos - previousPos;
+
+        foreach (GameObject stop in stops)
+        {
+            RectTransform stopRect = stop.GetComponent<RectTransform>();
+            Vector3 toStop = stopRect.position - currentPos;
+            float distance = toStop.magnitude;
+
+            if (distance <= 1f) // Ngưỡng này điều chỉnh tùy ý
+            {
+                // Kiểm tra Dot đang di chuyển về phía stop hay không
+                if (Vector3.Dot(velocity, toStop) > 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

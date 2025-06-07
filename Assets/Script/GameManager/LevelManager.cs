@@ -22,12 +22,20 @@ public class LevelManager : MonoBehaviour
     public Button nextLevelButton;              // Nút Next Level
     public Transform canvasTransform;
     public TextMeshProUGUI levelCompleteText;
+
     [Header("Fail UI")]
     public RectTransform failImagePrefab;
     public Button resetAfterFailButton;
 
     public TextMeshProUGUI levelText;
     public GameTimer gameTimer;
+
+    [Header("Audio")]
+    public AudioSource audioSource;       // AudioSource dùng chung cho hiệu ứng nút
+    public AudioClip clickClip;           // Âm thanh khi click nút
+    public AudioClip clearClip;           // Âm thanh khi hiện ảnh Clear
+    public AudioClip failClip;            // Âm thanh khi hiện ảnh Fail
+                                          // AudioClip click nút
 
     private List<RectTransform> allPivots = new();
     private List<RectTransform> allBars = new();
@@ -48,12 +56,23 @@ public class LevelManager : MonoBehaviour
             levelCompleteText.gameObject.SetActive(false);
             nextLevelButton.onClick.RemoveAllListeners();
             nextLevelButton.onClick.AddListener(OnNextLevelButtonClicked);
+            nextLevelButton.onClick.AddListener(PlayClickSound);   // thêm âm thanh click
         }
         resetAfterFailButton.onClick.AddListener(OnResetAfterFail);
+        resetAfterFailButton.onClick.AddListener(PlayClickSound);    // thêm âm thanh click
         resetAfterFailButton.gameObject.SetActive(false);
 
         LoadLevel(currentLevelIndex);
     }
+
+    void PlayClickSound()
+    {
+        if (audioSource != null && clickClip != null && audioSource.enabled && audioSource.gameObject.activeInHierarchy)
+        {
+            audioSource.PlayOneShot(clickClip);
+        }
+    }
+
     void OnResetAfterFail()
     {
         // Xóa fail image nếu có
@@ -109,6 +128,7 @@ public class LevelManager : MonoBehaviour
 
             float delay = 0.3f * allPivots.Count;
             Tween pivotTween = pivot.DOScale(Vector3.one, 1.5f).SetEase(Ease.OutBack).SetDelay(delay);
+            pivotTween.SetTarget(pivot); // Set target cho kill dễ dàng
             activeTweens.Add(pivotTween);
         }
 
@@ -132,6 +152,7 @@ public class LevelManager : MonoBehaviour
 
                 float delay = 0.2f * allBells.Count;
                 Tween bellTween = bellRect.DOScale(Vector3.one, 1.2f).SetEase(Ease.OutBack).SetDelay(delay);
+                bellTween.SetTarget(bellRect); // Set target
                 activeTweens.Add(bellTween);
             }
         }
@@ -153,28 +174,72 @@ public class LevelManager : MonoBehaviour
 
     public void ClearLevel()
     {
+        // Kill tất cả tween đang track thủ công
         foreach (Tween t in activeTweens)
             if (t.IsActive()) t.Kill();
         activeTweens.Clear();
 
-        foreach (var p in allPivots) Destroy(p.gameObject);
-        foreach (var b in allBars) Destroy(b.gameObject);
-        foreach (var bell in allBells) Destroy(bell.gameObject);
+        // Kill tween và Destroy Pivots
+        foreach (var p in allPivots)
+        {
+            if (p != null)
+            {
+                p.transform.DOKill(); // ✴️ Dừng tween trên RectTransform
+                var image = p.GetComponent<UnityEngine.UI.Image>();
+                if (image != null) image.DOKill(); // ✴️ Dừng tween trên UI nếu có
+                Destroy(p.gameObject);
+            }
+        }
+
+        // Kill tween và Destroy Bars
+        foreach (var b in allBars)
+        {
+            if (b != null)
+            {
+                b.transform.DOKill();
+                Destroy(b.gameObject);
+            }
+        }
+
+        // Kill tween và Destroy Bells
+        foreach (var bell in allBells)
+        {
+            if (bell != null)
+            {
+                bell.transform.DOKill();
+                var image = bell.GetComponent<UnityEngine.UI.Image>();
+                if (image != null) image.DOKill();
+                Destroy(bell.gameObject);
+            }
+        }
 
         allPivots.Clear();
         allBars.Clear();
         allBells.Clear();
 
-        // Xóa hết ảnh Clear cũ trên Canvas (nếu có)
+        // Xóa ảnh Clear từ Canvas
         foreach (Transform child in canvasTransform)
         {
             if (child.name.Contains(clearImagePrefab.name))
             {
+                child.DOKill(); // ✴️ Dừng tween UI
                 Destroy(child.gameObject);
             }
         }
+
+        // Xóa ảnh Fail nếu có
+        Transform failImg = canvasTransform.Find("FailImage");
+        if (failImg != null)
+        {
+            failImg.DOKill(); // ✴️ Dừng tween nếu có
+            Destroy(failImg.gameObject);
+        }
+
+        // Tắt nút
         nextLevelButton.gameObject.SetActive(false);
+        resetAfterFailButton.gameObject.SetActive(false);
     }
+
 
     public void CompleteLevel()
     {
@@ -188,22 +253,19 @@ public class LevelManager : MonoBehaviour
             PlayerPrefs.Save();
         }
 
-        // Dừng bộ đếm thời gian và ẩn UI timer khi hoàn thành level
         if (gameTimer != null)
         {
-            gameTimer.StopTimer();  // Dừng timer
-            gameTimer.gameObject.SetActive(false);  // Ẩn UI timer
+            gameTimer.StopTimer();
+            gameTimer.gameObject.SetActive(false);
         }
 
         ClearLevel();
         ShowLevelCompleteText();
         ShowClearEffect();
 
-        // Ẩn nút reset sau fail nếu đang hiển thị
         if (resetAfterFailButton != null)
             resetAfterFailButton.gameObject.SetActive(false);
 
-        // Ẩn ảnh fail nếu có
         Transform failImg = canvasTransform.Find("FailImage");
         if (failImg != null)
             Destroy(failImg.gameObject);
@@ -213,24 +275,21 @@ public class LevelManager : MonoBehaviour
     {
         if (levelCompleteText == null) return;
 
-        levelCompleteText.gameObject.SetActive(true);
-
-        // Kill tween đang chạy trên transform này (nếu có)
         levelCompleteText.transform.DOKill();
 
-        // Reset scale ban đầu
+        levelCompleteText.gameObject.SetActive(true);
+
         levelCompleteText.transform.localScale = new Vector3(0f, 1f, 1f);
 
         Sequence seq = DOTween.Sequence();
         seq.AppendInterval(1f)
            .Append(levelCompleteText.transform.DOScaleX(1f, 0.6f).SetEase(Ease.OutBack));
 
-        // Tween lặp vô hạn tách riêng
+        // Tween lặp vô hạn
         levelCompleteText.transform.DOScaleY(0.9f, 0.4f)
             .SetLoops(-1, LoopType.Yoyo)
             .SetEase(Ease.InOutSine)
-            .SetDelay(1f + 0.6f); // delay bằng tổng thời gian delay + tween trước đó
-
+            .SetDelay(1f + 0.6f);
     }
 
     void ShowClearEffect()
@@ -240,8 +299,10 @@ public class LevelManager : MonoBehaviour
             Debug.LogError("Clear effect setup sai!");
             return;
         }
-
-        // Tạo bản sao ảnh Clear trên Canvas, bắt đầu từ scale 0 và vị trí trung tâm canvas
+        if (audioSource != null && clearClip != null && audioSource.enabled && audioSource.gameObject.activeInHierarchy)
+        {
+            audioSource.PlayOneShot(clearClip);
+        }
         RectTransform clearImg = Instantiate(clearImagePrefab, canvasTransform);
         clearImg.gameObject.SetActive(true);
         clearImg.localScale = Vector3.zero;
@@ -263,6 +324,9 @@ public class LevelManager : MonoBehaviour
            {
                ShowNextLevelButton();
            });
+
+        seq.SetTarget(clearImg);
+        activeTweens.Add(seq);
     }
 
     void ShowClearAtPosition()
@@ -284,9 +348,11 @@ public class LevelManager : MonoBehaviour
         nextLevelButton.transform.localScale = Vector3.one;
 
         nextLevelButton.transform.DOKill();
-        nextLevelButton.transform.DOScale(1.1f, 0.5f)
+        Tween t = nextLevelButton.transform.DOScale(1.1f, 0.5f)
             .SetEase(Ease.OutBack)
             .SetLoops(-1, LoopType.Yoyo);
+        t.SetTarget(nextLevelButton.transform);
+        activeTweens.Add(t);
     }
 
     public void OnNextLevelButtonClicked()
@@ -301,14 +367,11 @@ public class LevelManager : MonoBehaviour
     void OnTimeOut()
     {
         Debug.Log("⏰ Hết giờ! Bạn thua.");
-
-        // Hiện hiệu ứng fail
+        ClearLevel();
         ShowFailEffect();
 
-        // Ẩn những thứ liên quan đến level hiện tại (nếu cần)
-        ClearLevel();
+        
 
-        // Ẩn nút next level nếu đang hiện
         if (nextLevelButton != null)
             nextLevelButton.gameObject.SetActive(false);
     }
@@ -316,20 +379,28 @@ public class LevelManager : MonoBehaviour
     void ShowFailEffect()
     {
         if (failImagePrefab == null) return;
-
+        if (audioSource != null && failClip != null && audioSource.enabled && audioSource.gameObject.activeInHierarchy)
+    {
+        audioSource.PlayOneShot(failClip);
+    }
         RectTransform failImg = Instantiate(failImagePrefab, canvasTransform);
-        failImg.gameObject.name = "FailImage"; // để xóa dễ
-        failImg.localScale = Vector3.zero;      // bắt đầu scale 0
+        failImg.gameObject.name = "FailImage";
+        failImg.localScale = Vector3.zero;
         failImg.anchoredPosition = Vector2.zero;
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(failImg.DOScale(1.3f, 0.4f).SetEase(Ease.OutBack))   // phóng to
-           .Append(failImg.DOScale(1f, 0.3f).SetEase(Ease.InOutSine)); // thu nhỏ về scale 1 (bình thường)
+        seq.Append(failImg.DOScale(1.3f, 0.4f).SetEase(Ease.OutBack))
+           .Append(failImg.DOScale(1f, 0.3f).SetEase(Ease.InOutSine));
 
-        // Hiện nút reset sau 1.1 giây (0.4 + 0.3 + 0.4 delay)
+        seq.SetTarget(failImg);
+        activeTweens.Add(seq);
+
         resetAfterFailButton.transform.localScale = Vector3.zero;
         resetAfterFailButton.gameObject.SetActive(true);
-        resetAfterFailButton.transform.DOScale(1f, 0.4f).SetEase(Ease.OutBack).SetDelay(1.1f);
+
+        Tween resetTween = resetAfterFailButton.transform.DOScale(1f, 0.4f).SetEase(Ease.OutBack).SetDelay(1.1f);
+        resetTween.SetTarget(resetAfterFailButton.transform);
+        activeTweens.Add(resetTween);
     }
 
     RectTransform CreateBar(RectTransform prefab, ClockwiseData data, bool isInteractive, int siblingIndex, RectTransform parent = null, bool keepWorldPosition = false)
@@ -343,60 +414,33 @@ public class LevelManager : MonoBehaviour
         Vector2 rotatedOffset = RotateOffset(baseOffset, data.rotation);
         Vector2 finalPos = pivotPos + rotatedOffset;
 
-        RectTransform bar;
+        RectTransform bar = Instantiate(prefab, parent ?? canvasTransform);
+        bar.name = prefab.name;
+        bar.anchoredPosition = finalPos;
+        bar.localRotation = Quaternion.Euler(0, 0, data.rotation);
+        bar.localScale = Vector3.zero;
 
-        if (parent != null)
+        allBars.Add(bar);
+
+        Tween barTween = bar.DOScale(Vector3.one, 1f).SetEase(Ease.OutBack).SetDelay(0.5f);
+        barTween.SetTarget(bar);
+        activeTweens.Add(barTween);
+
+        if (isInteractive)
         {
-            GameObject tempGO = new GameObject("Temp", typeof(RectTransform));
-            RectTransform temp = tempGO.GetComponent<RectTransform>();
-            temp.SetParent(canvasTransform);
-            temp.anchorMin = temp.anchorMax = temp.pivot = new Vector2(0.5f, 0.5f);
-            temp.sizeDelta = Vector2.zero;
-            temp.anchoredPosition = finalPos;
-            temp.localRotation = Quaternion.identity;
-
-            bar = Instantiate(prefab, temp);
-            bar.anchoredPosition = Vector2.zero;
-            bar.rotation = Quaternion.Euler(0, 0, data.rotation);
-            bar.SetParent(parent, worldPositionStays: true);
-
-            Destroy(tempGO);
-        }
-        else
-        {
-            bar = Instantiate(prefab, canvasTransform);
-            bar.anchoredPosition = finalPos;
-            bar.localRotation = Quaternion.Euler(0, 0, data.rotation);
-        }
-
-        bar.localScale = Vector3.one;
-
-        CanvasGroup cg = bar.gameObject.AddComponent<CanvasGroup>();
-        cg.alpha = 0f;
-
-        float delay = 0.3f * allBars.Count;
-        Sequence seq = DOTween.Sequence();
-        seq.Append(bar.DOAnchorPos(bar.anchoredPosition, 0.8f).SetEase(Ease.OutBack).SetDelay(delay));
-        seq.Join(cg.DOFade(1f, 0.8f).SetEase(Ease.Linear));
-        activeTweens.Add(seq);
-
-        if (!isInteractive)
-        {
-            foreach (var script in bar.GetComponents<MonoBehaviour>())
-                script.enabled = false;
+            // Add any interactive setup here, e.g. button events
         }
 
         bar.SetSiblingIndex(siblingIndex);
-        allBars.Add(bar);
+
         return bar;
     }
 
     Vector2 RotateOffset(Vector2 offset, float angleDegrees)
     {
         float rad = angleDegrees * Mathf.Deg2Rad;
-        return new Vector2(
-            offset.x * Mathf.Cos(rad) - offset.y * Mathf.Sin(rad),
-            offset.x * Mathf.Sin(rad) + offset.y * Mathf.Cos(rad)
-        );
+        float cos = Mathf.Cos(rad);
+        float sin = Mathf.Sin(rad);
+        return new Vector2(offset.x * cos - offset.y * sin, offset.x * sin + offset.y * cos);
     }
 }
