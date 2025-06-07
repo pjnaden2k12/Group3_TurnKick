@@ -37,10 +37,10 @@ public class MenuUIController : MonoBehaviour
     public static MenuUIController Instance;
     private int currentLevelIndex = 0;
 
-    // Tween management
     private List<Tween> buttonTweens = new List<Tween>();
     private Tween logoTween;
     private Tween panelTween;
+    private Tween gamePlayPanelTween;
 
     void Awake()
     {
@@ -49,7 +49,6 @@ public class MenuUIController : MonoBehaviour
 
     void Start()
     {
-        // Button listeners
         playButton.onClick.AddListener(OnPlayClicked);
         helpButton.onClick.AddListener(OnHelpClicked);
         backFromHelpButton.onClick.AddListener(OnBackFromHelp);
@@ -57,15 +56,13 @@ public class MenuUIController : MonoBehaviour
         btnBackToLevels.onClick.AddListener(OnBackToLevelsClicked);
         btnRestartLevel.onClick.AddListener(OnRestartLevelClicked);
 
-        // Init
         levelPanel.SetActive(false);
         helpPanel.SetActive(false);
-        gamePlayPanel.SetActive(false); // Cho phép bật lúc cần
+        gamePlayPanel.SetActive(false);
 
         AnimateMenu();
     }
 
-    // ===== Animate Menu Panel =====
     void AnimateMenu()
     {
         RectTransform menu = menuPanel.GetComponent<RectTransform>();
@@ -75,13 +72,11 @@ public class MenuUIController : MonoBehaviour
         menu.localScale = Vector3.one;
         cg.alpha = 1;
 
-        // Logo trượt xuống
         Vector3 originalPos = logo.localPosition;
         logo.localPosition = originalPos + new Vector3(0, 800f, 0);
         logoTween?.Kill();
         logoTween = logo.DOLocalMove(originalPos, 1f).SetEase(Ease.OutBack);
 
-        // Button scale
         playButton.transform.localScale = Vector3.zero;
         helpButton.transform.localScale = Vector3.zero;
 
@@ -89,21 +84,20 @@ public class MenuUIController : MonoBehaviour
         helpButton.transform.DOScale(1f, 0.6f).SetEase(Ease.OutBack).SetDelay(0.6f);
     }
 
-    // ===== Panel Open Logic =====
     void AnimatePanel(RectTransform panel, RectTransform[] buttons)
     {
+        if (panelTween != null && panelTween.IsActive()) panelTween.Kill();
+
         CanvasGroup cg = panel.GetComponent<CanvasGroup>();
         if (cg == null) cg = panel.gameObject.AddComponent<CanvasGroup>();
 
         panel.localScale = Vector3.one * 0.7f;
         cg.alpha = 0;
 
-        panelTween?.Kill();
         panelTween = DOTween.Sequence()
             .Append(panel.DOScale(1f, 0.4f).SetEase(Ease.OutBack))
             .Join(cg.DOFade(1f, 0.4f));
 
-        // Clear old tweens
         KillButtonTweens();
 
         float delay = 0.05f;
@@ -122,6 +116,7 @@ public class MenuUIController : MonoBehaviour
         if (cg == null) cg = panel.gameObject.AddComponent<CanvasGroup>();
 
         KillButtonTweens();
+        if (panelTween != null && panelTween.IsActive()) panelTween.Kill();
 
         DOTween.Sequence()
             .Append(panel.DOScale(0.8f, 0.5f).SetEase(Ease.InBack))
@@ -138,11 +133,11 @@ public class MenuUIController : MonoBehaviour
         buttonTweens.Clear();
     }
 
-    // ===== Button Events =====
     void OnPlayClicked()
     {
         menuPanel.SetActive(false);
         levelPanel.SetActive(true);
+        UpdateLevelButtons();
         AnimatePanel(levelPanel.GetComponent<RectTransform>(), levelButtons);
     }
 
@@ -175,71 +170,105 @@ public class MenuUIController : MonoBehaviour
         AnimateMenu();
     }
 
-    // ===== Load Level From LevelButton =====
     public void LoadLevelAndStart(int levelIndex)
     {
-        if (levelIndex < 0 || levelIndex >= levelManager.levels.Length)
+        int unlocked = PlayerPrefs.GetInt("UnlockedLevel", 0);
+        if (levelIndex > unlocked)
         {
-            Debug.LogError($"Level {levelIndex} không hợp lệ!");
+            Debug.Log("🔒 Level chưa được mở!");
             return;
         }
 
-        currentLevelIndex = levelIndex; // ✅ Gán lại để chơi lại đúng level này
+        currentLevelIndex = levelIndex;
+
+        KillButtonTweens();
+        if (panelTween != null && panelTween.IsActive()) panelTween.Kill();
 
         gamePlayPanel.SetActive(true);
         AnimateOpenGamePlayPanel();
+
         levelPanel.SetActive(false);
         levelText.text = $"{levelIndex + 1}";
         levelManager.LoadLevel(levelIndex);
     }
 
-    // Nút quay về level panel
     void OnBackToLevelsClicked()
     {
-        DestroyAllAfterimages(); // Xóa tất cả tàn ảnh
-        DOTween.KillAll();
-        // Tắt gameplay, mở lại level panel
+        DestroyAllAfterimages();
+        KillButtonTweens();
+        if (panelTween != null && panelTween.IsActive()) panelTween.Kill();
+        if (gamePlayPanelTween != null && gamePlayPanelTween.IsActive()) gamePlayPanelTween.Kill();
+
         gamePlayPanel.SetActive(false);
         levelPanel.SetActive(true);
+        UpdateLevelButtons();
         AnimatePanel(levelPanel.GetComponent<RectTransform>(), levelButtons);
     }
 
-    // Nút chơi lại level hiện tại
     void OnRestartLevelClicked()
     {
-        // Hủy tất cả tween và clear các prefab đã spawn
-        DOTween.KillAll();  // Hủy tất cả tween đang chạy
-        ClearSpawnedPrefabs(); // Xóa tất cả các prefab đã spawn
-        levelManager.LoadLevel(currentLevelIndex); // Tải lại level hiện tại
+        // Lấy current level từ levelManager
+        currentLevelIndex = levelManager.CurrentLevelIndex;
+        Debug.Log($"Restarting level {currentLevelIndex + 1}");
+
+        DOTween.KillAll();
+        ClearSpawnedPrefabs();
+        levelManager.LoadLevel(currentLevelIndex);
     }
+
+
 
     void ClearSpawnedPrefabs()
     {
-        // Clear mọi đối tượng đã spawn trong LevelManager
-        levelManager.ClearLevel(); 
+        levelManager.ClearLevel();
     }
 
     public void AnimateOpenGamePlayPanel()
     {
+        if (gamePlayPanelTween != null && gamePlayPanelTween.IsActive()) gamePlayPanelTween.Kill();
+
         CanvasGroup cg = gamePlayPanel.GetComponent<CanvasGroup>();
         if (cg == null) cg = gamePlayPanel.AddComponent<CanvasGroup>();
 
         gamePlayPanel.transform.localScale = Vector3.one * 0.7f;
         cg.alpha = 0;
-        gamePlayPanelImage.color = new Color(1, 1, 1, 0);  // bắt đầu trong suốt
+        gamePlayPanelImage.color = new Color(1, 1, 1, 0);
 
-        Sequence seq = DOTween.Sequence();
-        seq.Append(gamePlayPanel.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack));
-        seq.Join(cg.DOFade(1f, 0.5f));
-        seq.Join(gamePlayPanelImage.DOFade(1f, 0.5f));  // fade in ảnh panel
+        gamePlayPanelTween = DOTween.Sequence()
+            .Append(gamePlayPanel.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack))
+            .Join(cg.DOFade(1f, 0.5f))
+            .Join(gamePlayPanelImage.DOFade(1f, 0.5f));
     }
-    
-        void DestroyAllAfterimages()
+
+    void DestroyAllAfterimages()
     {
         GameObject[] afterimages = GameObject.FindGameObjectsWithTag("Afterimage");
         foreach (GameObject obj in afterimages)
         {
             Destroy(obj);
+        }
+    }
+
+    public void UpdateLevelButtons()
+    {
+        int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 0);
+
+        for (int i = 0; i < levelButtons.Length; i++)
+        {
+            Button btn = levelButtons[i].GetComponent<Button>();
+            TextMeshProUGUI txt = levelButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+
+            if (i <= unlockedLevel)
+            {
+                levelButtons[i].gameObject.SetActive(true);
+                btn.interactable = true;
+                if (txt != null) txt.text = $"{i + 1}";
+            }
+            
+            else
+            {
+                levelButtons[i].gameObject.SetActive(false); // ẩn hoàn toàn
+            }
         }
     }
 

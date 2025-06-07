@@ -15,12 +15,17 @@ MonoBehaviour:
   pivots:
   - x: 0
     y: 0
+    isPivotX: 0
   - x: 160
     y: 0
+    isPivotX: 0
   - x: -160
     y: 0
+    isPivotX: 0
   - x: -320
     y: 0
+    isPivotX: 0
+  bells: []
   clockwiseShort:
     pivotIndex: 0
     rotation: 0
@@ -33,3 +38,5 @@ MonoBehaviour:
   winTargetLong:
     pivotIndex: 1
     rotation: 66
+  timeLimit: 60
+  useTimer: 0

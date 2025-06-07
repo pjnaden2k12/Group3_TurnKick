@@ -22,8 +22,6 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
     private ClockwiseController controller;
 
     private const float detectionRadius = 160f;
-    public GameTimer gameTimer;
-
 
     void Start()
     {
@@ -117,11 +115,7 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
                 valid = true;
             }
 
-            // ✅ Nếu bắt đầu quay thành công, bắt đầu đếm ngược
-            if (valid && gameTimer != null)
-            {
-                gameTimer.StartTimer();
-            }
+            
         }
     }
 

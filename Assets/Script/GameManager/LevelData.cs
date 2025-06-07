@@ -13,7 +13,6 @@ public class LevelData : ScriptableObject
     public ClockwiseData winTargetLong;
 
     public float timeLimit = 60f;
-
 }
 [System.Serializable]
 public class BellData

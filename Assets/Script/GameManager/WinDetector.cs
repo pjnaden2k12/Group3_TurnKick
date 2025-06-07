@@ -4,16 +4,18 @@ public class PlayerTriggerWin : MonoBehaviour
 {
     private bool touchedShort = false;
     private bool touchedLong = false;
-    public GameManager gameManager;
+
+    // Thay vì GameManager, ta lấy LevelManager trực tiếp
+    public LevelManager levelManager;
 
     private void Awake()
     {
-        if (gameManager == null)
+        if (levelManager == null)
         {
-            gameManager = GameObject.FindFirstObjectByType<GameManager>();
-            if (gameManager == null)
+            levelManager = GameObject.FindFirstObjectByType<LevelManager>();
+            if (levelManager == null)
             {
-                Debug.LogWarning("Không tìm thấy GameManager trong scene!");
+                Debug.LogWarning("Không tìm thấy LevelManager trong scene!");
             }
         }
     }
@@ -23,7 +25,7 @@ public class PlayerTriggerWin : MonoBehaviour
         if (other.CompareTag("WintargetShort"))
         {
             touchedShort = true;
-            CancelInvoke(nameof(ResetShort)); // tránh reset sớm
+            CancelInvoke(nameof(ResetShort));
         }
 
         if (other.CompareTag("WintargetLong"))
@@ -37,7 +39,7 @@ public class PlayerTriggerWin : MonoBehaviour
         if (bellObj != null)
         {
             BellStateController bell = bellObj.GetComponent<BellStateController>();
-            if (bell == null || !bell.HasTouched) return; // Không chạm -> không win
+            if (bell == null || !bell.HasTouched) return;
         }
 
         bool hasLongTarget = GameObject.Find("WinTargetLong(Clone)") != null;
@@ -62,7 +64,7 @@ public class PlayerTriggerWin : MonoBehaviour
     {
         if (other.CompareTag("WintargetShort"))
         {
-            Invoke(nameof(ResetShort), 0.15f); // đợi 0.2s rồi mới reset
+            Invoke(nameof(ResetShort), 0.15f);
         }
 
         if (other.CompareTag("WintargetLong"))
@@ -76,14 +78,14 @@ public class PlayerTriggerWin : MonoBehaviour
 
     void Win()
     {
-        // Gọi hàm WinGame của GameManager
-        if (gameManager != null)
+        if (levelManager != null)
         {
-            gameManager.WinGame();
+            levelManager.CompleteLevel();
+            Debug.Log("🎉 Level marked as cleared directly from PlayerTriggerWin!");
         }
         else
         {
-            Debug.LogWarning("GameManager chưa được gán trong PlayerTriggerWin!");
+            Debug.LogWarning("LevelManager chưa được gán trong PlayerTriggerWin!");
         }
         enabled = false;
     }
