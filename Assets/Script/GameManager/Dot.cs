@@ -3,22 +3,38 @@
 public class DotStopCollider : MonoBehaviour
 {
     public ClockwiseController controller;
+    public bool isPivot = false;
+
+    private RectTransform thisDotRect;
 
     private void Start()
     {
         if (controller == null)
-        {
-            controller = FindFirstObjectByType<ClockwiseController>();
+            controller = GetComponentInParent<ClockwiseController>();
 
-        }
+        thisDotRect = GetComponent<RectTransform>();
+    }
+
+    public void SetPivotState(bool isThisDotPivot)
+    {
+        isPivot = isThisDotPivot;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Stop") && controller != null && controller.isRotating)
+        // Kiểm tra va chạm với tag Stop
+        if (!controller || !controller.isRotating || !other.CompareTag("Stop"))
+            return;
+
+        // Kiểm tra nếu Dot này KHÔNG phải là pivot thực tế (được chọn để xoay)
+        if (controller.currentPivot == thisDotRect)
         {
-            Debug.Log("DotStop chạm Stop => Dừng quay");
-            controller.StopRotation();
+            // Dot này là pivot thực sự => bỏ qua va chạm
+            return;
         }
+
+        // Dot này KHÔNG phải pivot => hợp lệ để dừng
+        Debug.Log($"❗ Dot {gameObject.name} chạm Stop => Dừng quay");
+        controller.StopRotation();
     }
 }

@@ -64,14 +64,17 @@ public class ClockwiseController : MonoBehaviour
 
     public void StartRotate(RectTransform pivotDot)
     {
-        if (rotateSoundClip != null && !rotateAudioSource.isPlaying)
-            rotateAudioSource.Play();
+        if (isRotating) return; // Không cho quay nếu đang quay rồi
 
         currentPivot = pivotDot;
         isRotating = true;
 
+        if (rotateSoundClip != null && !rotateAudioSource.isPlaying)
+            rotateAudioSource.Play();
+
         OnRotationStarted?.Invoke();
     }
+
 
     void RotateBar()
     {
@@ -89,7 +92,22 @@ public class ClockwiseController : MonoBehaviour
 
     void AlignBarToPivot()
     {
-        Vector3 offset = currentPivot.position - (currentPivot == dotA ? dotA.position : dotB.position);
-        barRect.position += offset;
+        //// Lấy khoảng cách gốc giữa 2 dot trong local space
+        //Vector3 localOffset = (dotB.localPosition - dotA.localPosition);
+
+        //// Nếu pivot là dotA, dotB phải ở đúng offset đó
+        //if (currentPivot == dotA)
+        //{
+        //    dotB.localPosition = dotA.localPosition + localOffset;
+        //}
+        //else if (currentPivot == dotB)
+        //{
+        //    dotA.localPosition = dotB.localPosition - localOffset;
+        //}
+
+        //// Cập nhật vị trí bar (trung điểm)
+        //barRect.position = (dotA.position + dotB.position) / 2f;
     }
+
+
 }

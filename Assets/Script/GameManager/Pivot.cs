@@ -133,6 +133,10 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
             p.pivotXEnabled = !p.pivotXEnabled;
             p.tag = p.pivotXEnabled ? "Pivot" : "Untagged";
             p.SetSprite(p.pivotXEnabled ? p.normalSprite : p.spriteX);
+            foreach (Transform child in p.transform)
+            {
+                child.gameObject.SetActive(p.pivotXEnabled);
+            }
         }
     }
 

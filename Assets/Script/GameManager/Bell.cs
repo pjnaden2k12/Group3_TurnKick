@@ -14,16 +14,21 @@ public class BellStateController : MonoBehaviour
     [Header("Detection Settings")]
     public float detectDistance = 160f;
 
+    [Header("Bell Sounds")]
+    public AudioClip bellOnClip;     // Âm khi bật chuông
+    public AudioClip bellOffClip;    // Âm khi tắt chuông
+
     private RectTransform bellRect;
     private RectTransform clockwiseShort;
     private RectTransform clockwiseLong;
 
-    private bool hasTouched = false; // NEW
+    private AudioSource audioSource;
+
+    private bool hasTouched = false;
+    public bool HasTouched => hasTouched;
 
     private BellState currentState = BellState.Normal;
     private CanvasGroup canvasGroup;
-    public bool HasTouched => hasTouched; // Cho phép script khác truy cập trạng thái đã chạm
-
 
     private enum BellState
     {
@@ -49,6 +54,10 @@ public class BellStateController : MonoBehaviour
         canvasGroup = bellImage.GetComponent<CanvasGroup>();
         if (canvasGroup == null)
             canvasGroup = bellImage.gameObject.AddComponent<CanvasGroup>();
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     void Update()
@@ -62,7 +71,6 @@ public class BellStateController : MonoBehaviour
 
         if (!hasTouched)
         {
-            // Chưa từng chạm
             if (isNear)
                 ChangeState(BellState.NoClear);
             else
@@ -70,7 +78,6 @@ public class BellStateController : MonoBehaviour
         }
         else
         {
-            // Đã từng chạm
             if (isNear)
                 ChangeState(BellState.Clear);
             else
@@ -84,6 +91,12 @@ public class BellStateController : MonoBehaviour
 
         // Toggle trạng thái đã chạm
         hasTouched = !hasTouched;
+
+        // Phát âm thanh ngay khi va chạm
+        if (hasTouched && bellOnClip != null)
+            audioSource.PlayOneShot(bellOnClip);
+        else if (!hasTouched && bellOffClip != null)
+            audioSource.PlayOneShot(bellOffClip);
     }
 
     void ChangeState(BellState newState)
@@ -92,14 +105,24 @@ public class BellStateController : MonoBehaviour
         currentState = newState;
 
         Sprite targetSprite = normalSprite;
+
         switch (newState)
         {
-            case BellState.Clear: targetSprite = clearSprite; break;
-            case BellState.NoClear: targetSprite = noClearSprite; break;
+            case BellState.Clear:
+                targetSprite = clearSprite;
+                break;
+
+            case BellState.NoClear:
+                targetSprite = noClearSprite;
+                break;
+
             case BellState.WasClearButFar:
                 targetSprite = wasClearButFarSprite != null ? wasClearButFarSprite : clearSprite;
                 break;
-            case BellState.Normal: targetSprite = normalSprite; break;
+
+            case BellState.Normal:
+                targetSprite = normalSprite;
+                break;
         }
 
         bellImage.transform.DOScale(0.8f, 0.1f).OnComplete(() =>

@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: Level3
   m_EditorClassIdentifier: 
   pivots:
-  - x: -160
-    y: 160
+  - x: -260
+    y: 60
     isPivotX: 0
-  - x: 0
-    y: 160
+  - x: -100
+    y: 60
     isPivotX: 0
-  - x: 0
-    y: 0
+  - x: -100
+    y: -100
     isPivotX: 0
   bells: []
   clockwiseShort:

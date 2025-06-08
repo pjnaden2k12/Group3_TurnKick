@@ -13,19 +13,27 @@ MonoBehaviour:
   m_Name: Level7
   m_EditorClassIdentifier: 
   pivots:
-  - x: 0
-    y: 0
+  - x: 96
+    y: 128
     isPivotX: 0
-  - x: 160
+  - x: 192
     y: 0
     isPivotX: 0
   - x: -160
     y: 0
+    isPivotX: 1
+  - x: 0
+    y: 0
+    isPivotX: 1
+  - x: -96
+    y: 128
     isPivotX: 0
-  bells: []
+  bells:
+  - x: 320
+    y: 160
   clockwiseShort:
     pivotIndex: 0
-    rotation: 30
+    rotation: 0
   clockwiseLong:
     pivotIndex: 0
     rotation: 0
@@ -36,4 +44,3 @@ MonoBehaviour:
     pivotIndex: 2
     rotation: 0
   timeLimit: 60
-  useTimer: 0

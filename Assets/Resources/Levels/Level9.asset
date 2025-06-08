@@ -13,16 +13,26 @@ MonoBehaviour:
   m_Name: Level9
   m_EditorClassIdentifier: 
   pivots:
-  - x: 0
-    y: 0
+  - x: 96
+    y: 128
     isPivotX: 0
-  - x: 160
+  - x: 0
     y: 0
     isPivotX: 0
   - x: -160
     y: 0
     isPivotX: 0
-  bells: []
+  - x: 0
+    y: -160
+    isPivotX: 0
+  - x: 0
+    y: 160
+    isPivotX: 0
+  bells:
+  - x: 320
+    y: 160
+  - x: -320
+    y: 160
   clockwiseShort:
     pivotIndex: 0
     rotation: 30
@@ -30,10 +40,9 @@ MonoBehaviour:
     pivotIndex: 0
     rotation: 0
   winTargetShort:
-    pivotIndex: 2
-    rotation: 300
+    pivotIndex: 3
+    rotation: 90
   winTargetLong:
     pivotIndex: 2
     rotation: 0
   timeLimit: 60
-  useTimer: 0

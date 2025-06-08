@@ -28,7 +28,7 @@ MonoBehaviour:
     rotation: 30
   clockwiseLong:
     pivotIndex: 0
-    rotation: 0
+    rotation: 90
   winTargetShort:
     pivotIndex: 2
     rotation: 300
@@ -36,4 +36,3 @@ MonoBehaviour:
     pivotIndex: 2
     rotation: 0
   timeLimit: 60
-  useTimer: 0

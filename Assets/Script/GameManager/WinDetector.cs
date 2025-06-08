@@ -35,12 +35,18 @@ public class PlayerTriggerWin : MonoBehaviour
         }
 
         // Kiểm tra Bell
-        GameObject bellObj = GameObject.FindWithTag("Bell");
-        if (bellObj != null)
+        // Kiểm tra tất cả Bell
+        GameObject[] allBells = GameObject.FindGameObjectsWithTag("Bell");
+        foreach (GameObject bellObj in allBells)
         {
             BellStateController bell = bellObj.GetComponent<BellStateController>();
-            if (bell == null || !bell.HasTouched) return;
+            if (bell == null || !bell.HasTouched)
+            {
+                // Nếu có 1 cái chưa chạm, thì không được tính là thắng
+                return;
+            }
         }
+
 
         bool hasLongTarget = GameObject.Find("WinTargetLong(Clone)") != null;
 
