@@ -33,7 +33,7 @@ MonoBehaviour:
     pivotIndex: 2
     rotation: 150
   clockwiseLong:
-    pivotIndex: 3
+    pivotIndex: 2
     rotation: 360
   winTargetShort:
     pivotIndex: 4
