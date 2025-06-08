@@ -8015,10 +8015,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6440123154994098886, guid: af617b7ac59aa7f4488511ea1dc224df, type: 3}
-      propertyPath: pivotPrefab
-      value: 
-      objectReference: {fileID: 442470797611243442, guid: b2411c2a08d901746ae904c9a088ca5c, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

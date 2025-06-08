@@ -23,13 +23,6 @@ public class ClockwiseController : MonoBehaviour
     public AudioClip rotateSoundClip;
     private AudioSource rotateAudioSource;
 
-    private Vector3 previousDotAPosition;
-    private Vector3 previousDotBPosition;
-    private Transform originalParentA;
-    private Transform originalParentB;
-
-
-
     public event Action OnRotationStarted;
 
     void Start()
@@ -38,25 +31,14 @@ public class ClockwiseController : MonoBehaviour
         rotateAudioSource.clip = rotateSoundClip;
         rotateAudioSource.loop = true;
         rotateAudioSource.playOnAwake = false;
-
-        previousDotAPosition = dotA.position;
-        previousDotBPosition = dotB.position;
-
-        originalParentA = dotA.parent;
-        originalParentB = dotB.parent;
     }
-
 
     void Update()
     {
         if (!isRotating) return;
 
-        previousDotAPosition = dotA.position;
-        previousDotBPosition = dotB.position;
-
         pivotPosition = currentPivot.position;
         RotateBar();
-        CheckCollision();
 
         afterimageTimer += Time.deltaTime;
         if (afterimageTimer >= afterimageInterval)
@@ -85,54 +67,18 @@ public class ClockwiseController : MonoBehaviour
         if (rotateSoundClip != null && !rotateAudioSource.isPlaying)
             rotateAudioSource.Play();
 
-        // Nếu dot đã bị snap vào Pivot -> gỡ ra khỏi Pivot
-        if (dotA.parent != originalParentA)
-        {
-            dotA.SetParent(originalParentA);
-        }
-        if (dotB.parent != originalParentB)
-        {
-            dotB.SetParent(originalParentB);
-        }
-
-        if (isRotating) return;
-
         currentPivot = pivotDot;
         isRotating = true;
 
         OnRotationStarted?.Invoke();
     }
 
-
     void RotateBar()
     {
         barRect.RotateAround(pivotPosition, Vector3.forward, -rotateSpeed * Time.deltaTime);
     }
 
-    void CheckCollision()
-    {
-        GameObject[] pivots = GameObject.FindGameObjectsWithTag("Pivot");
-
-        foreach (GameObject pivot in pivots)
-        {
-            RectTransform pivotRect = pivot.GetComponent<RectTransform>();
-
-            if (currentPivot == dotA && IsDotInStopWithDirection(dotB, previousDotBPosition, pivotRect))
-            {
-                StopRotation();  // Dừng quay khi dotB va chạm pivot
-                return;
-            }
-
-            if (currentPivot == dotB && IsDotInStopWithDirection(dotA, previousDotAPosition, pivotRect))
-            {
-                StopRotation();  // Dừng quay khi dotA va chạm pivot
-                return;
-            }
-        }
-    }
-
-
-    void StopRotation()
+    public void StopRotation()
     {
         if (rotateAudioSource.isPlaying)
             rotateAudioSource.Stop();
@@ -143,30 +89,7 @@ public class ClockwiseController : MonoBehaviour
 
     void AlignBarToPivot()
     {
-        if (currentPivot == dotA)
-        {
-            Vector3 offset = currentPivot.position - dotA.position;
-            barRect.position += offset;
-        }
-        else if (currentPivot == dotB)
-        {
-            Vector3 offset = currentPivot.position - dotB.position;
-            barRect.position += offset;
-        }
-    }
-
-    void SnapDotToPivot(RectTransform dot, RectTransform pivot)
-    {
-        dot.SetParent(pivot);
-        dot.localPosition = Vector3.zero;
-    }
-
-    bool IsDotInStopWithDirection(RectTransform dot, Vector3 previousPos, RectTransform stopRect)
-    {
-        Vector3 currentPos = dot.position;
-        Vector3 velocity = currentPos - previousPos;
-        Vector3 toStop = stopRect.position - currentPos;
-
-        return toStop.magnitude <= 1f && Vector3.Dot(velocity, toStop) > 0;
+        Vector3 offset = currentPivot.position - (currentPivot == dotA ? dotA.position : dotB.position);
+        barRect.position += offset;
     }
 }
