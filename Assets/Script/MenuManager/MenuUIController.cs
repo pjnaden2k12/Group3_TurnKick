@@ -216,15 +216,21 @@ public class MenuUIController : MonoBehaviour
     void OnBackToLevelsClicked()
     {
         DestroyAllAfterimages();
+
+        DOTween.Kill(gamePlayPanel.transform);
+        DOTween.Kill(levelManager);
+        DOTween.Kill(levelManager.transform);
+
+
         KillButtonTweens();
-        if (panelTween != null && panelTween.IsActive()) panelTween.Kill();
-        if (gamePlayPanelTween != null && gamePlayPanelTween.IsActive()) gamePlayPanelTween.Kill();
 
         gamePlayPanel.SetActive(false);
         levelPanel.SetActive(true);
+
         UpdateLevelButtons();
         AnimatePanel(levelPanel.GetComponent<RectTransform>(), levelButtons);
     }
+
 
     void OnRestartLevelClicked()
     {
@@ -265,11 +271,24 @@ public class MenuUIController : MonoBehaviour
     void DestroyAllAfterimages()
     {
         GameObject[] afterimages = GameObject.FindGameObjectsWithTag("Afterimage");
+
         foreach (GameObject obj in afterimages)
         {
+            DOTween.Kill(obj.transform); // Kill tween trên transform
+            DOTween.Kill(obj);           // Kill tween trên bất cứ thành phần nào khác
+
+            // Cẩn thận hơn: kill tween trên CanvasGroup nếu có
+            CanvasGroup cg = obj.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                DOTween.Kill(cg);
+            }
+
             Destroy(obj);
         }
     }
+
+
 
     public void UpdateLevelButtons()
     {

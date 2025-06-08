@@ -18,11 +18,12 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
 
     [Header("Âm thanh")]
     public AudioClip clickSound;
-    private AudioSource audioSource;
 
     private Image pivotImage;
     [HideInInspector] public RectTransform pivotRect;
     private ClockwiseController controller;
+    private AudioSource audioSource;
+    private Canvas canvas;
 
     private const float detectionRadius = 160f;
 
@@ -31,13 +32,13 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
         pivotImage = GetComponent<Image>();
         pivotRect = GetComponent<RectTransform>();
         controller = FindFirstObjectByType<ClockwiseController>();
+        canvas = GetComponentInParent<Canvas>();
 
         if (CompareTag("Untagged") || tag != "Pivot")
             gameObject.tag = "Pivot";
 
         pivotImage.sprite = normalSprite;
 
-        // Tạo AudioSource nếu chưa có
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -50,20 +51,18 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
     {
         if (!pivotXEnabled && isPivotX)
         {
-            pivotImage.sprite = spriteX;
+            SetSprite(spriteX);
             return;
         }
 
-        Vector2 pivotScreenPos = RectTransformUtility.WorldToScreenPoint(null, pivotRect.position);
+        bool isTouching = false, isNear = false;
+        Vector2 pivotScreenPos = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, pivotRect.position);
         GameObject[] dots = GameObject.FindGameObjectsWithTag("Dot");
-
-        bool isTouching = false;
-        bool isNear = false;
 
         foreach (GameObject dot in dots)
         {
             RectTransform dotRect = dot.GetComponent<RectTransform>();
-            Vector2 dotScreenPos = RectTransformUtility.WorldToScreenPoint(null, dotRect.position);
+            Vector2 dotScreenPos = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, dotRect.position);
             float distance = Vector2.Distance(pivotScreenPos, dotScreenPos);
 
             if (RectTransformUtility.RectangleContainsScreenPoint(dotRect, pivotScreenPos))
@@ -78,33 +77,21 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
         }
 
         if (isTouching)
-        {
-            if (pivotImage.sprite != clearSprite)
-                ChangeSpriteWithBounce(clearSprite);
-        }
+            SetSprite(clearSprite);
         else if (isNear)
-        {
-            if (pivotImage.sprite != noClearSprite)
-                ChangeSpriteWithBounce(noClearSprite);
-        }
+            SetSprite(noClearSprite);
         else
-        {
-            if (pivotImage.sprite != normalSprite)
-                ChangeSpriteWithBounce(normalSprite);
-        }
+            SetSprite(normalSprite);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (controller == null || controller.isRotating) return;
 
-        // 🔊 Phát âm thanh click
         if (clickSound != null)
-        {
             audioSource.PlayOneShot(clickSound);
-        }
 
-        pivotRect.DOKill(); // Dừng tween cũ
+        pivotRect.DOKill();
         pivotRect.DOScale(0.9f, 0.05f).SetEase(Ease.OutQuad).OnComplete(() =>
         {
             pivotRect.DOScale(1.1f, 0.1f).SetEase(Ease.OutElastic).OnComplete(() =>
@@ -145,11 +132,14 @@ public class Pivot : MonoBehaviour, IPointerClickHandler
 
             p.pivotXEnabled = !p.pivotXEnabled;
             p.tag = p.pivotXEnabled ? "Pivot" : "Untagged";
-            if (p.pivotXEnabled)
-                p.ChangeSpriteWithBounce(p.normalSprite);
-            else
-                p.ChangeSpriteWithBounce(p.spriteX);
+            p.SetSprite(p.pivotXEnabled ? p.normalSprite : p.spriteX);
         }
+    }
+
+    private void SetSprite(Sprite newSprite)
+    {
+        if (pivotImage.sprite != newSprite)
+            ChangeSpriteWithBounce(newSprite);
     }
 
     private void ChangeSpriteWithBounce(Sprite newSprite)

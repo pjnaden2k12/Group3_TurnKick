@@ -13,31 +13,25 @@ MonoBehaviour:
   m_Name: Level4
   m_EditorClassIdentifier: 
   pivots:
-  - x: 200
+  - x: -96
+    y: 128
+    isPivotX: 0
+  - x: 0
     y: 0
     isPivotX: 0
-  - x: 138.58
-    y: 143.3
-    isPivotX: 0
-  - x: 16.97
-    y: 199.28
-    isPivotX: 0
-  - x: -110.58
-    y: 159.4
-    isPivotX: 0
-  - x: -198.42
-    y: 58.14
-    isPivotX: 0
+  - x: 160
+    y: 0
+    isPivotX: 1
   bells: []
   clockwiseShort:
-    pivotIndex: 0
-    rotation: 45
+    pivotIndex: 1
+    rotation: 180
   clockwiseLong:
     pivotIndex: 0
     rotation: 0
   winTargetShort:
-    pivotIndex: 4
-    rotation: 0
+    pivotIndex: 2
+    rotation: 120
   winTargetLong:
     pivotIndex: 0
     rotation: 0
