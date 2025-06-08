@@ -44,7 +44,7 @@ MonoBehaviour:
     rotation: 0
   winTargetShort:
     pivotIndex: 5
-    rotation: 300
+    rotation: 270
   winTargetLong:
     pivotIndex: 2
     rotation: 0
